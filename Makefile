@@ -1,6 +1,6 @@
 
 all:
-	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lpng Test_sprite.cpp sprite.cpp lines.cpp
+	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lpng Test_sprite.cpp sprite.cpp 
 	
 pong:
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image gamePack/pong.cpp sprite.cpp

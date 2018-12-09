@@ -1,6 +1,5 @@
 #include <SDL2/SDL.h>
 #include "sprite.h"
-#include "lines.h"
 
 #include <iostream>
 #include <sstream>
@@ -13,17 +12,14 @@ const int windX = 880;
 const int windY = 620;
 const int SDL_WU = SDL_WINDOWPOS_UNDEFINED;
 
-
 using namespace std;
-
-
-
 
 int main(int argc, char ** argv)
 {
+
 	srand(time(NULL));
 	SDL_Init(SDL_INIT_EVERYTHING);
-	wind = SDL_CreateWindow("Title",SDL_WU, SDL_WU , windX, windY, 0);
+	wind = SDL_CreateWindow("Title",SDL_WU, SDL_WU , windX, windY, SDL_WINDOW_OPENGL);
 	if(wind == NULL)
 	{
 		cout << "Could not create Window\n";
@@ -32,18 +28,19 @@ int main(int argc, char ** argv)
 
 	SDL_Surface* screen = SDL_GetWindowSurface(wind);
 	SDL_UpdateWindowSurface(wind);
+	unsigned int RED = SDL_MapRGB(screen->format,255, 10, 10);
 
-	group resMan;
+	static int userX = windX/2 - 50;
+	static int userY = windY/2 - 100;
 
-	item resMap;
-	resMap.setImage("res/tilesetStart5_0.png");
-	resMan.add(&resMap);
-
-	tile grass2(1, 32, TILESIZE, TILESIZE);
-	SDL_Rect tilegrass = {720, 128, TILESIZE, TILESIZE};
-	resMap.stamp(grass2.getImage(), tilegrass, 0,0);
-	resMan.add(&grass2);
+	group resMan; // resource manager (free all at end.)
 	
+	item man(windX/2, windY/2, 100, 100);
+	man.setImage("res/dot.png");
+	unsigned int BLUE = SDL_MapRGB(man.getImage()->format, 10, 10, 255);
+	drawCircle(man.getImage(), BLUE, 15.0, 15.0, 6);
+	resMan.add(&man);
+
 
 	item grass(0,0,TILESIZE, TILESIZE);
 	resMan.add(&grass);
@@ -53,63 +50,20 @@ int main(int argc, char ** argv)
 	resMan.add(&lvl);
 	lvl.setDimensions(30, 30);
 	lvl.setCamera(0, 0, windX, windY);
-	lvl.fillBoard(grass2);
+	lvl.fillBoard(grass);
+	lvl.driven.add(&man);
 
-	item red;
-	red.setImage("res/Tanks/Tanks/tankRed.png");
-	tile tank(rand() % (windX - 100), rand() % (windY - 100), 83, 103);
-	red.stamp(tank.getImage(), 0, 0);
-	red.free();
-	red.setImage("res/Tanks/Tanks/tracksSmall.png");
-	red.stamp(tank.getImage(), 0,0);
-	red.free();
-
-	
-
-	animation kickL;
-	kickL.addImage("res/stepL1.png");
-	kickL.addImage("res/stepL2.png");
-	kickL.addImage("res/kickL3.png");
-	resMan.add(&kickL);
-	kickL.setFrameSkip(4);
-
-	animation kickR;
-	kickR.addImage("res/stepR1.png");
-	kickR.addImage("res/stepR2.png");
-	kickR.addImage("res/kickR3.png");
-	resMan.add(&kickR);
-	kickR.setFrameSkip(4);
+	item tank(BLUE, rand() % lvl.getPos().w, rand() % lvl.getPos().h, 30, 20);
+	lvl.driven.add(&tank);
 
 
-	SDL_Rect outside = lvl.getPos();
-	outside.w --;
-	outside.h --;
-	drawBox(lvl.getImage(), outside, 255, 255, 10);
-
-
-/*
-	vector <item*> resources;
-	for(int i = 0; i < 300; i ++)
-	{
-
-		animation* TkickR = new animation();
-		TkickR->setPos(rand()%windX, rand()%windY);
-		TkickR->addImage("res/stepR1.png");
-		TkickR->addImage("res/stepR2.png");
-		TkickR->addImage("res/kickR3.png");
-		resMan.add(TkickR);
-		TkickR->setFrameSkip(4);
-		resources.push_back(TkickR);
-
-	}
-*/
-	animation * active = &kickL;
 	bool run = true;
 	bool left = false, right = false, up= false, down = false;
-	int walk = 2;
+	int walk = 3;
 	speed limit;
 	limit.fps = 30;
 	limit.redux = SDL_GetTicks();
+	double phi = 0;
 	while(run)
 	{
 
@@ -133,10 +87,8 @@ int main(int argc, char ** argv)
 							run = false;
 						}
 					break;
-					case SDLK_f:
-						active = &kickL;
 					case SDLK_SPACE:
-						walk = 32;
+						walk = 3;
 					break;
 					case SDLK_DOWN:
 						down = true;
@@ -146,11 +98,9 @@ int main(int argc, char ** argv)
 					break;
 					case SDLK_LEFT:
 						left = true;
-						active = &kickL;
 					break;
 					case SDLK_RIGHT:
 						right = true;
-						active = &kickR;
 					break;
 				}
 			}
@@ -159,7 +109,7 @@ int main(int argc, char ** argv)
 				switch(ev.key.keysym.sym)
 				{
 					case SDLK_SPACE:
-						walk = 2;
+						walk = 8;
 					break;
 					case SDLK_DOWN:
 						down = false;
@@ -180,29 +130,42 @@ int main(int argc, char ** argv)
 
 			}
 		}
+		int oldx = lvl.getCamera()->x;
+		int oldy = lvl.getCamera()->y;
+
 		if(up)
 		{
-			lvl.getCamera()->y -= walk;
+			lvl.getCamera()->y += yFromPolar(walk, phi);
+			lvl.getCamera()->x += xFromPolar(walk, phi);
+			lvl.driven.move( -1 * xFromPolar(walk, phi), -1 * yFromPolar(walk, phi));
+			man.move(xFromPolar(walk, phi), yFromPolar(walk, phi));
 		}
 		if(down)
 		{
-			lvl.getCamera()->y += walk;
+			lvl.getCamera()->y -= yFromPolar(walk, phi);
+			lvl.getCamera()->x -= xFromPolar(walk, phi);
+			lvl.driven.move(1 * xFromPolar(walk, phi), 1 * yFromPolar(walk, phi));
+			man.move( -1 * xFromPolar(walk, phi), -1 *yFromPolar(walk, phi));
 		}
 		if(left)
 		{
-			lvl.getCamera()->x -= walk;
+			phi += .1;
 		}
 		if(right)
 		{
-			lvl.getCamera()->x += walk;
+			phi -= .1;
 		}
-		active->next();
 
 		lvl.draw(screen);
-		grass2.draw(screen);
-		active->draw(screen);
-		tank.draw(screen);
+		man.draw(screen);
+		SDL_Rect temp = man.getPos();
+		temp.x = temp.x + temp.w/2;
+		temp.y = temp.y + temp.h/2;
+
+		lvl.driven.draw(screen);
 		
+		drawLine(screen,RED, temp.x, temp.y, temp.x + xFromPolar(walk, phi), temp.y + yFromPolar(walk, phi));
+
 
 
 		limit.fc ++;
@@ -211,9 +174,6 @@ int main(int argc, char ** argv)
 		SDL_UpdateWindowSurface(wind);
 		limit.limitFPS();
 	}
-	char file[] = "leef.png";
-	writeImage(screen, file);
-
 
 	resMan.free();
 	SDL_DestroyWindow(wind);

@@ -27,6 +27,8 @@
 #include <fstream>
 #include <ctime>
 #include <cstdlib>
+#include <cmath>
+
 const int TILESIZE = 32;
 
 enum ButtonStates
@@ -89,10 +91,33 @@ bool writeImage(SDL_Surface * src, char* fileName);
 
 void speedLimit(const int fps, int &startTime);
 
+// test that a point is inside a surface drawing area
+bool isInside(int x, int y, SDL_Surface* surf);
+void swap(int & x, int & y);
+void donoth();
+
+// draw a pixel of color (which should already be in the correct format) onto dest at (x, y)
+void putPixel(SDL_Surface* dest, int x, int y, unsigned int color);
+
+// draw a line on dest from (x1, y1) to x2, y2)
+void drawLine(SDL_Surface *dest, unsigned int color, int x1, int y1, int x2, int y2);
+void scanLineDraw(SDL_Surface * dest, unsigned int color, int x, int y, int x2);
+
+void drawBox(SDL_Surface * dest, SDL_Rect rect, unsigned int color);
+void drawBox(SDL_Surface * dest, SDL_Rect rect, int r, int g, int b);
+
 // use when something went wrong and you want to exit program.
 void oshit();
 
 
+// Polar Vs. Cartesian Functions
+// Use these functions to convert between polar and cartesian points.
+double xFromPolar(double length, double angle);
+double yFromPolar(double length, double angle);
+double rFromCartesian(double x, double y);
+double phiFromCartesion(double x, double y);
+
+void drawCircle(SDL_Surface * dest, unsigned int color, double x, double y, double radius);
 
 // controls for a drawable item or sprite
 // needsUpdate true:  image/position/etc is modified and needs window attention.
@@ -459,18 +484,22 @@ class board : public item
 	void addTile(item toAdd, int x, int y, int subx, int suby);
 	void addDriven(item *toAdd, int x, int y); // draw tile at pos relative to a tile, use for animated items
 	
+	// Animation driven tiles/items, these should be drawn each frame.
+	// to keep fps up, this group should be kept smaller.
+	group driven;
+
 	private:
 	// static tiles that compose the main image for the board.
 	// this group should be drawn once before the game loop, then
 	// the camera will be used to move the whole image.
 	group tiles;
-	// Animation driven tiles/items, these should be drawn each frame.
-	// to keep fps up, this group should be kept smaller.
-	group driven;
 	SDL_Rect camera;
 	int tw, th;
 
 };
+
+
+
 
 
 

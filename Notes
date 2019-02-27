@@ -1,0 +1,5 @@
+
+1. "undefined reference to `vtable for YourClass"
+ - This is a common error I came accross while planning out a header for a class. The problem is that I've created a declaration of a virtual function (like void draw(SDL_Surface dest);) without providing a definition of that virtual function. The gcc-c++ compiler I'm working with will not give you the name of the function in question unless the class has a destructor defined for it. Either take note of which virtual functions are in your header and ensure they are defined, or create a destructor for your class and the compiler will then tell you which function is causing the problem.
+
+

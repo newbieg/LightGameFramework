@@ -483,6 +483,7 @@ class board : public item
 	// x and y.
 	void addTile(item toAdd, int x, int y, int subx, int suby);
 	void addDriven(item *toAdd, int x, int y); // draw tile at pos relative to a tile, use for animated items
+	void move(int x, int y);
 	
 	// Animation driven tiles/items, these should be drawn each frame.
 	// to keep fps up, this group should be kept smaller.
@@ -495,6 +496,7 @@ class board : public item
 	group tiles;
 	SDL_Rect camera;
 	int tw, th;
+	int paddingx, paddingy;
 
 };
 

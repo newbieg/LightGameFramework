@@ -831,7 +831,11 @@ SDL_Rect* board::getCamera()
 	return &this->camera;
 }
 
-
+// We'll have to work on this...
+void board::move(int x, int y)
+{
+	//if(x < paddingx 
+}
 
 
 // ============= Animation ===============

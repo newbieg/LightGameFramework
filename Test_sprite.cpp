@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 
 	board lvl;
 	resMan.add(&lvl);
-	lvl.setDimensions(30, 30);
+	lvl.setDimensions(80, 80);
 	lvl.setCamera(0, 0, windX, windY);
 	lvl.fillBoard(grass);
 	lvl.driven.add(&man);
@@ -135,25 +135,29 @@ int main(int argc, char ** argv)
 
 		if(up)
 		{
-			lvl.getCamera()->y += yFromPolar(walk, phi);
-			lvl.getCamera()->x += xFromPolar(walk, phi);
-			lvl.driven.move( -1 * xFromPolar(walk, phi), -1 * yFromPolar(walk, phi));
-			man.move(xFromPolar(walk, phi), yFromPolar(walk, phi));
+			int changeX = xFromPolar(walk, phi);
+			int changeY = yFromPolar(walk, phi);
+			lvl.getCamera()->y += changeY;
+			lvl.getCamera()->x += changeX;
+			lvl.driven.move( -1 * changeX, -1 * changeY);
+			man.move(changeX, changeY);
 		}
 		if(down)
 		{
-			lvl.getCamera()->y -= yFromPolar(walk, phi);
-			lvl.getCamera()->x -= xFromPolar(walk, phi);
-			lvl.driven.move(1 * xFromPolar(walk, phi), 1 * yFromPolar(walk, phi));
-			man.move( -1 * xFromPolar(walk, phi), -1 *yFromPolar(walk, phi));
+			int changeX = xFromPolar(walk, phi);
+			int changeY = yFromPolar(walk, phi);
+			lvl.getCamera()->y -= changeY;
+			lvl.getCamera()->x -= changeX;
+			lvl.driven.move(1 * changeX, 1 * changeY);
+			man.move( -1 * changeX, -1 * changeY);
 		}
 		if(left)
 		{
-			phi += .1;
+			phi += .05;
 		}
 		if(right)
 		{
-			phi -= .1;
+			phi -= .05;
 		}
 
 		lvl.draw(screen);

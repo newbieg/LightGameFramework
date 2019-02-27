@@ -16,6 +16,7 @@ using namespace std;
 int main(int argc, char ** argv)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
+	TTF_Init();
 	wind = SDL_CreateWindow("Title",SDL_WU, SDL_WU , windX, windY, SDL_WINDOW_OPENGL);
 	if(wind == NULL)
 	{
@@ -58,10 +59,13 @@ int main(int argc, char ** argv)
 			}
 
 		}
+		// Draw to screen here.
+		SDL_FillRect(screen, NULL, 0xffffff);
 
-		spd.printFPS(screen, 20, 20);
+		spd.printFPS(screen, "res/Acme/Acme-Regular.ttf",  20, 20);
 		SDL_UpdateWindowSurface(wind);
 		spd.limitFPS();
+		spd.fc++;
 	}
 
 	SDL_FreeSurface(screen);

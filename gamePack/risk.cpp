@@ -1,3 +1,13 @@
+/* risk.cpp
+ * opens a risk board and places soldier items on each country.
+ * Not a fully functional game, but demonstrates how
+ * any item can be checked for a click,
+ * how to use the  and was used in 
+ * testing a button class which is now functional.
+ * Was written before items could load their own 
+ * images, so the code is verbose for no reason.
+ */
+
 #include "../sprite.h"
 #include <SDL2/SDL_image.h>
 #include <string>
@@ -5,7 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "../lines.h"
+//#include "../lines.h"
 
 
 const int windX = 1227;
@@ -97,7 +107,7 @@ SDL_Rect soldier::update()
 		color = yellow;
 	}
 	SDL_FillRect(this->image, NULL, color);
-	txt num(temp, 2, 0);
+	txt num(temp, "res/Acme/Acme-Regular.ttf", 2, 0);
 
 	num.draw(this->image);
 	return this->rect;
@@ -203,6 +213,10 @@ colorKit::colorKit(SDL_Surface * screen, int r, int g, int b)
 
 using namespace std;
 
+
+
+string fontName = "res/Acme/Acme-Regular.ttf";	
+
 soldier soldierBank[5];
 
 soldier doNothing;
@@ -225,10 +239,10 @@ soldier * handleClick(soldier * active, soldier* lastClicked, int team, int game
 	}
 	else if(gameState%2 == 0)
 	{
-		cout << lastClicked->getTeam() << endl;
-		cout << active->getTeam() << endl;
-		cout << team << endl;
-			cout << endl;
+//		cout << lastClicked->getTeam() << endl;
+//		cout << active->getTeam() << endl;
+//		cout << team << endl;
+//			cout << endl;
 		// soldiers being moved to enemy country on attack
 		if(lastClicked->getTeam() == team && active->getTeam() != team && lastClicked->getHP() > 1 && active->getHP() > 0)
 		{
@@ -434,8 +448,8 @@ int main()
 	board_1.add(&box42);
 	board_1.add(&box43);
 	board_1.save("soldierMap.txt");
-	txt intro1("A Game Of", 110, 10);
-	txt intro2("RISK!", 350, 310);
+	txt intro1("A Game Of", fontName, 110, 10);
+	txt intro2("RISK!",fontName, 350, 310);
 	intro1.setFontSize(240);
 	intro2.setFontSize(280);
 	board_1.add(&intro1);

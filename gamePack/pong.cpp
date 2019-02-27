@@ -112,9 +112,9 @@ int gameLoop(int playerDir)
 	item boarder(offWhite, 2,0 + 31, (windX  - 4) , windY - 62);
 	group activeItems;
 	activeItems.add(&boarder);
+	activeItems.add(&ball);
 	activeItems.add(&paddle1);
 	activeItems.add(&paddle2);
-	activeItems.add(&ball);
 
 
 	bool paddle1_up = false;

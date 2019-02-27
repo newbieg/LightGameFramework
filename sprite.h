@@ -31,6 +31,21 @@
 
 const int TILESIZE = 32;
 
+enum WindowTransforms
+{
+	WT_BLOCKS, // replace old with squares containing new
+	WT_BLOCKSFALLING, // new screen replaced by falling blocks
+	WT_FADE, // slow fade by averaging the two screens
+	WT_FRACTURE, // Might also be called window blinds
+	WT_FRACTURESLIDE, // slide the blinds, see previous
+	WT_OPENDOOR, // opens from mid-screen
+	WT_SLIDEDOWN, // slides old screen in given direction
+	WT_SLIDELEFT,
+	WT_SLIDERIGHT,
+	WT_SLIDEUP,
+	WT_SNOW // small random colors that eventually match new scr
+};
+
 enum ButtonStates
 {
 	BTN_UP,
@@ -80,8 +95,15 @@ enum tileStates
 // Use optLoad if image is going to be stretched using SDL_BlitScaled(etc.);
 SDL_Surface * optLoad(std::string path, const SDL_Surface* dest );
 
+// initializes the SDL libraries needed for the FrameWork to, well, work
+void initFramework();
+
+// convert a cartesian point down to a single dimensional array
 int xyToSingle(int x, int y);
 
+// Write an SDL_Surface to a png file. No other fileType
+// is supported at this time. Use for a single snapshot of an item 
+// or of the screen. (Not a fast function, use sparingly) 
 bool writeImage(SDL_Surface * src, char* fileName);
 
 // startTime = SDL_GetTicks();
@@ -125,6 +147,7 @@ class item
 {
 	public:
 	item(const item &copy);
+	item(SDL_Rect size);
 	item();
 	virtual ~item();
 	item(unsigned int color, int x, int y, int w = 100, int h = 100);
@@ -141,7 +164,8 @@ class item
 	void setSize(int w, int y);
 	void setPos(int x, int y);
 	void getPos(int & x, int & y);
-	SDL_Rect getPos();
+	void setRect(SDL_Rect r);
+	SDL_Rect getPos() const;
 	void getImgSize(int & w, int & h);
 	void getSize(int & w, int & h);
 	SDL_Rect getSize();
@@ -162,12 +186,15 @@ class item
 //	virtual void xorImage(SDL_Surface * other); 
 	// combine other image with current one. 
 	virtual void averageImage(SDL_Surface * other);
-	virtual bool checkCollision(item & other);
+	virtual bool checkCollision(const item & other) const;
+	virtual bool checkCollision(const SDL_Rect & boarder) const;
 	virtual bool isInside(item & other);
 	virtual bool isInside(int x, int y);
 	int getCenterX();
 	int getCenterY();
 	unsigned int setColor(int r, int g, int b);
+	unsigned int setColor(int r, int g, int b, int a);
+	unsigned int setColor(unsigned int mappedColor);
 
 	void move(int x, int y);
 	
@@ -201,6 +228,8 @@ class item
 	SDL_Surface * image;
 	SDL_Surface * safeTrackImage;
 	SDL_Rect rect;
+	unsigned int color;
+
 	bool dragging; // use as in-game drag/drop flag
 
 	/*
@@ -217,6 +246,36 @@ class item
 };
 
 
+class window : public item
+{
+	public:
+		window();
+		window(std::string title, int width, int height);
+		void setTitle(std::string title);
+		std::string getTitle();
+		// hides window, simulates window closing.
+		// nice way to store a window for later use.
+		void hide();
+
+		// actually closes window and destroys it.
+		void close();
+
+		//considering implementing as a linked list so that 
+		//all windows could be closed by calling the
+		//following: void closeAll();
+
+		// window is hidden by default
+		void show();
+//		void move(int x, int y);
+		SDL_Rect update();
+//		void update(SDL_Rect section);
+//		void update(SDL_Rect * sections);
+	private:
+		std::string windowName;
+		SDL_Window* wind;
+		bool hidden;
+		bool closeAll;
+};
 
 
 
@@ -229,6 +288,7 @@ class animation : public item
 		void addImage(std::string pathToImage);
 		void addImage(std::string path, SDL_Rect camera);
 		void draw(SDL_Surface * dest);
+		void draw(SDL_Surface * dest, int index, int x, int y);
 		void next();
 		void remove(int index); // remove an image at index
 		// free the resource images
@@ -274,13 +334,6 @@ class button: public item
 };
 
 
-// implement a lot of the clickable functions without some of the
-// added wheight of a full button
-class clickable : public item
-{
-
-};
-
 
 class txt: public item
 {
@@ -288,12 +341,32 @@ class txt: public item
 		txt();
 //		virtual ~txt();
 		txt(std::string text, std::string fontPath, int x, int y);
-		void reset();
+		// call when a change of font is required
+		void fullRender();
+		// call when a simple change in text is made
+		void quickRender();
 		void setText(std::string text);
 		void setFontSize(int size);
+		void addFontSize(int change);
 		void setFont(std::string fontPath);
+		std::string getFont();
+		TTF_Font * getFontPtr();
+		int getFontSize();
 		void setColor(const SDL_Color textColor); 
+		SDL_Color getColor();
 		virtual void free();
+
+
+		// Add text to end of words;
+		void addText(std::string text); 
+		// insert Text directly after pos given
+		void insertText(std::string, int pos);
+		// return a text pointer so another item can manipulate
+		// the contents directly. Other item must call reset when
+		// done. 
+		std::string * getTextPtr();
+		// Return a copy of the text being used.
+		std::string getText();
 
 		// void slowDraw(SDL_Surface* dest , int fpl); // instead of instantly printing, type each letter on a frame per second scale (fpl == frames per letter) ... have decided that this should wait until animation class is set up...
 	private:
@@ -304,7 +377,77 @@ class txt: public item
 		std::string fontsFilePath;
 };
 
+
+// An item with a solid background which allows for
+// text entry from the user.
+class textBox : public item
+{
+	public:
+	explicit textBox(int x, int y, int w, int h) : item(x, y, w, h) {};
+	textBox();
+	void showBkg(bool yesNo);
+	// If this item has keyboard focus, the envent will 
+	// return is a rect that indicates where a redraw is required
+	void handleEvent(SDL_Event &ev);
+	void draw(SDL_Surface * dest);
+	// insert a new line where the cursor sits.
+	void newLine();
+	// pixLeng is the length in pixels to scroll left. - negative = right.
+	void scrollX(int pixLeng); 
+	void scrollY(int pixLeng); 
+	// change the font size of all text. Var change is relative to current
+	// size and can be + or -
+	void changeFontSize(int change);
+	void setBoundary(int x, int y, int w, int h);
+	void setBoundary(SDL_Rect Bounds);
+	// the padding between each line
+	void setPadding(int between);
+	void setBkgColor(int r, int g, int b);
+
+	private:
+	std::vector <txt*> lines;
+	item background;
+	bool shouldShowBkg;
+	unsigned int cursor; // position in content that is being written to
+	item cursorImg; // The cursor image shows where next char is typed.
+	unsigned int bkgColor;
+	int padding;
+	SDL_Color fgColor;
+	int currentLine;
+	// keep visible text inside this invisible box
+	SDL_Rect boundingBox;
+	// we're redoing a bit of what was done with board class,
+	// camera is how we will control scrolling.
+	SDL_Rect camera;
+};
+
+
+
+// I might need to wait on this until I come up with 
+// a modified txt which allows for each letter to be a different color...
+class marquis
+{
+	public:
+		marquis();
+		void addSpeed(int change);
+		void changeDirection();
+		void setSpeed(int newSpeed);
+		txt writing;
+		void draw(SDL_Surface * dest);
+
+	private:
+		int speed;
+		SDL_Rect camera;
+		// should text blink on/off 
+		bool blink;
+		// should the entire text run through to empty before loop?
+		bool clearRunBeforeNext; 
+}
+
+
+
 // Dialogue box. You. Dirty mind.
+// Not implemented
 class dBox : public item
 {
 	public:
@@ -323,6 +466,7 @@ class speed
 	public:
 	speed();
 	int fc; // frameCount
+	int internalFC;
 	int fps; // frames per second limit
 	int ticks; // time since game start(update each loop)
 	int redux; // use instead for calculating from start of loop...
@@ -341,7 +485,6 @@ class dice: public item
 	dice();
 	dice(int sides);
 //	virtual ~dice();
-
 	// mustChange true = don't repeat sides from one roll to next
 	// better for slow animation of a roll.
 	int roll(const bool mustChange);
@@ -351,7 +494,6 @@ class dice: public item
 	virtual bool playRoll(int & framesLeft, int speed); // play an animation of the dice rolling
 	void draw(SDL_Surface * dest);
 	virtual void free();
-
 
 	private:
 	int sideUp;
@@ -387,12 +529,10 @@ class group
 	// (eg. you are using the group as a resource manager)
 	// then call free first, then clear.
 	void clear(); 
-
 	bool isEmpty(); // check if group is empty
 	bool has(item hasIt); // check if hasIt is in the group
 	void move(int x, int y); // move the x,y by an increment of given
-	group getColision(item& colider);
-
+	group getCollision(item& colider);
 	// type-safe, but will return all objects under 
 	// 	point (x, y), not just those that accept mouseclicks.
 	// Group that calls this should only contain objects which 
@@ -401,16 +541,12 @@ class group
 	group getDrags();
 	item* getItem(int index);
 	std::vector <item*> getItems();
-
-
 	virtual void load(std::string fileName);
 	virtual void save(std::string fileName);
-
 	// return a list of rectangles requiring update on window.
 	// User must pass to SDL_UpdateWindowRects();
 	std::vector <SDL_Rect> getUpdateRegion();
 	std::vector <SDL_Rect> getRects();
-
 	void clearUpdateRegion();
 	
 
@@ -463,9 +599,10 @@ class board : public item
 {
 	public:
 	board();
-	
 	// w and h are tile positions, tileSizeW is the width in pixels.
 	explicit board(int x, int y, int w, int h) : item(x, y, w, h) {};
+	// x and y are the top left pad, w and h are the pad to the bottom right
+	void setPadding(int x, int y, int w, int h);
 	// Must set Dimensions, w and h are 32 (TILESIZE) pixels per increment
 	void setDimensions(int w, int h);
 	void setCamera(SDL_Rect windowSize);
@@ -483,27 +620,29 @@ class board : public item
 	// x and y.
 	void addTile(item toAdd, int x, int y, int subx, int suby);
 	void addDriven(item *toAdd, int x, int y); // draw tile at pos relative to a tile, use for animated items
+	// add new layers to the main drawable
+	void addLayers(int count);
 	void move(int x, int y);
-	
 	// Animation driven tiles/items, these should be drawn each frame.
 	// to keep fps up, this group should be kept smaller.
 	group driven;
-
-	private:
+	// may be redundant as they can be done with  a combination of
+	// these are picked up when activated.
+	group items;
+	// Put characters in the walk group, they will apear to move
+	// oposite to items and tiles
+	group walk;
 	// static tiles that compose the main image for the board.
 	// this group should be drawn once before the game loop, then
 	// the camera will be used to move the whole image.
-	group tiles;
+	std::vector <group> layer;
+	// Not drawn, these are tiles that need to be checked for colision.
+	group solids;
+
+	private:
 	SDL_Rect camera;
 	int tw, th;
-	int paddingx, paddingy;
-
+	SDL_Rect padding;
 };
-
-
-
-
-
-
 
 #endif

@@ -25,6 +25,14 @@ void oshit()
 	exit(0);
 }
 
+void initFramework()
+{
+	SDL_Init(SDL_INIT_EVERYTHING);
+	TTF_Init();
+	// to build the framework, use the following compile command:
+	// g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lpng yourFile.cpp sprite.cpp 	
+}
+
 void scanLineDraw(SDL_Surface * dest, unsigned int color, int x, int y, int x2)
 {
 	for(int i = x; i < x2; i ++)
@@ -62,6 +70,20 @@ item::item(const item &copy)
 	this->dragging = copy.dragging;
 	this->id = copy.id;
 	this->safeTrackImage = copy.image;
+
+}
+
+item::item(SDL_Rect size)
+{
+	this->rect.x = size.x;
+	this->rect.y = size.y;
+	this->rect.w = size.w;
+	this->rect.h = size.h;
+	this->scaled = false;
+	itemCount ++;
+	this->id = item::itemCount;
+	this->safeTrackImage = NULL;
+	this->image = NULL;
 
 }
 
@@ -137,11 +159,26 @@ item::item(int x, int y, int w, int h)
 
 unsigned int item::setColor(int r, int g, int b)
 {
-	// this might be overly hopefull that image matches screen format...
-	unsigned int color = SDL_MapRGB(this->image->format, r, g, b);
-	SDL_FillRect(this->image, NULL, color);
+	this->color = SDL_MapRGB(this->image->format, r, g, b);
+	SDL_FillRect(this->image, NULL, this->color);
 	return color;
 }
+
+unsigned int item::setColor(int r, int g, int b, int a)
+{
+	this->color = SDL_MapRGBA(this->image->format, r, g, b, a);
+	SDL_FillRect(this->image, NULL, this->color);
+	return color;
+}
+
+unsigned int item::setColor(unsigned int mapColor)
+{
+	SDL_FillRect(this->image, NULL, mapColor);
+	this->color = mapColor;
+	return mapColor;
+}
+
+
 
 unsigned long item::getID() const
 {
@@ -183,7 +220,7 @@ void item::stamp(SDL_Surface * dest, int x, int y)
 	}
 	else
 	{
-		cout << "image not found while trying to draw.\n";
+		cout << "image not found while trying to stamp.\n";
 	}
 }
 void item::stamp(SDL_Surface * dest, SDL_Rect sub, int x, int y)
@@ -312,6 +349,11 @@ void item::getPos(int & x, int & y)
 	y = this->rect.y;
 }
 
+void item::setRect(SDL_Rect r)
+{
+	this->rect = r;
+}
+
 void item::getImgSize(int & w, int & h)
 {
 	SDL_Rect temp = this->image->clip_rect;
@@ -330,19 +372,30 @@ void item::setSize(int w, int h)
 	this->rect.w = w;
 	this->rect.h = h;
 	this->needsUpdate = true;
+	if(this->image != NULL)
+	{
+		SDL_FreeSurface(this->image);
+	}
+	this->image = SDL_CreateRGBSurface(0, w, h, 32, 0,0,0,0);
+	setColor(this->color);
 }
 
-SDL_Rect item::getPos()
+SDL_Rect item::getPos() const
 {
 	return this->rect;
 }
 
-bool item::checkCollision(item & other)
+bool item::checkCollision(const item & other) const
 {
-	if(this->getPos().x < other.getPos().x + other.getPos().w && 
-	this->getPos().x + this->getPos().w > other.getPos().x &&
-	this->getPos().y < other.getPos().y + other.getPos().h && 
-	this->getPos().y + this->getPos().h > other.getPos().y)
+	SDL_Rect temp = other.getPos();
+	return this->checkCollision(temp);
+}
+bool item::checkCollision(const SDL_Rect & bdr) const
+{
+	if(this->getPos().x < bdr.x + bdr.w && 
+	this->getPos().x + this->getPos().w > bdr.x &&
+	this->getPos().y < bdr.y + bdr.h && 
+	this->getPos().y + this->getPos().h > bdr.y)
 	{
 		return true;
 	}
@@ -497,7 +550,7 @@ void group::remove(item desc)
 {
 	for(int i = 0; i < items.size(); i ++)
 	{
-		if(desc == *items[i])
+		if(desc.getImage() == (*items[i]).getImage())
 		{
 			updateRects.push_back(items[i]->getPos());
 			items.erase(items.begin() + i);
@@ -625,10 +678,10 @@ void group::clearUpdateRegion()
 // return a subset of items that the colider has colided with.
 // a subset will allow for each item to be dealt with in case they
 // are stacked on a tile...
-group group::getColision(item& colider)
+group group::getCollision(item& colider)
 {
 	group subset;
-	if(! items.empty())
+	if(!(items.empty()))
 	{
 		for(int i = 0; i < this->items.size(); i ++)
 		{
@@ -695,6 +748,77 @@ group group::getDrags()
 // -------------------------------
 
 
+
+
+//======================== WINDOW CLASS =================
+
+window::window()
+{
+	
+	windowName = "No Title";
+	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 200, 150, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+	if(wind == NULL)
+	{
+		cout << "Failed to create Window " << windowName;
+		return;
+	}
+	this->image = SDL_GetWindowSurface(wind);
+	SDL_UpdateWindowSurface(wind);
+}
+
+window::window(string title, int width, int height)
+{
+	windowName = title;
+	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+	if(wind == NULL)
+	{
+		cout << "Failed to create Window " << title;
+		return;
+	}
+	this->image = SDL_GetWindowSurface(wind);
+	SDL_UpdateWindowSurface(wind);
+
+}
+
+void window::setTitle(string title)
+{
+	windowName = title;
+	SDL_SetWindowTitle(wind, title.c_str());
+}
+
+string window::getTitle()
+{
+	return SDL_GetWindowTitle(wind);
+}
+
+SDL_Rect window::update()
+{
+	SDL_UpdateWindowSurface(this->wind);
+	return this->rect;
+}
+
+void window::hide()
+{
+	SDL_HideWindow(wind);
+}
+
+void window::show()
+{
+	SDL_ShowWindow(wind);
+}
+
+void window::close()
+{
+	SDL_FreeSurface(this->image);
+	SDL_DestroyWindow(this->wind);
+}
+
+
+
+
+
+
+//======================== TILE CLASS =================
 void tile::setState()
 {
 	
@@ -765,6 +889,10 @@ void board::setDimensions(int w, int h)
 {
 	this->tw = w;
 	this->th = h;
+	this->padding.x = 0;
+	this->padding.y = 0;
+	this->padding.w = 640;
+	this->padding.h = 480;
 	this->image = SDL_CreateRGBSurface(0, w * TILESIZE, h * TILESIZE, 32, 0,0,0,0);
 	this->rect = this->image->clip_rect;
 }
@@ -780,6 +908,8 @@ void board::setCamera(int x, int y, int w, int h)
 	this->camera.y = y;
 	this->camera.w = w;
 	this->camera.h = h;
+	this->padding.w = w;
+	this->padding.h = h;
 }
 
 void board::draw(SDL_Surface* dest)
@@ -831,10 +961,57 @@ SDL_Rect* board::getCamera()
 	return &this->camera;
 }
 
+void board::setPadding(int x, int y, int w, int h)
+{
+	this->padding.x = x;
+	this->padding.y = y;
+	this->padding.w = w;
+	this->padding.h = h;
+}
+
 // We'll have to work on this...
 void board::move(int x, int y)
 {
-	//if(x < paddingx 
+	item temp;
+	int centerX = camera.w/2;
+	int centerY = camera.h/2;
+	if(!(walk.isEmpty()))
+	{
+		temp.setRect(walk.getItem(0)->getPos());
+		temp.move(x, y);
+
+		// Check if we can move to the new location
+		if(solids.getCollision(temp).isEmpty())
+		{
+
+			if(camera.x + x > padding.x && camera.x + x < this->rect.w - padding.w && (temp.getPos().x > centerX - 4 && temp.getPos().x < centerX + 4))
+			{
+				camera.x += x;
+			}
+			else if(temp.getPos().x + temp.getPos().w + 2 < camera.w)
+			{
+				walk.move(x, 0);
+			}	
+			else if(camera.x + x < this->rect.w - padding.w)
+			{
+				camera.x += x;
+			}
+			if(camera.y + y > padding.y && camera.y + y < this->rect.h - padding.h && (temp.getPos().y > centerY - 4 && temp.getPos().y < centerY + 4))
+			{
+				camera.y += y;
+			}
+			else if(temp.getPos().y + temp.getPos().h + 2 < camera.h)
+			{
+				walk.move(0, y);
+			}
+			else if(camera.y + y < this->rect.h - padding.h || camera.y + y > padding.y) // I have a logic problem to work out here.
+		// the origin if needs nesting rather than this finale else if...
+//		I left off here
+			{
+				camera.y += y;
+			}
+		}
+	}
 }
 
 
@@ -864,6 +1041,22 @@ void animation::draw(SDL_Surface *dest)
 	}
 }
 
+void animation::draw(SDL_Surface * dest, int index, int x, int y)
+{
+	int rolledIndex = index % images.size();
+	if(images[rolledIndex] != NULL)
+	{
+		SDL_Rect temp = this->rect;
+		temp.x = x;
+		temp.y = y;
+		SDL_BlitSurface(this->images[rolledIndex], NULL, dest, &temp);
+	}
+	else
+	{
+		cout << "image not found while trying to draw.\n";
+	}
+}
+
 void animation::next()
 {
 	limitter ++;
@@ -889,21 +1082,22 @@ void animation::setFrameSkip(const int skipFrames)
 
 
 
-
-
-
 // ===============  txt ================
 // A text rendering class
 
 
 txt::txt()
 {
-	size = 14;
+	this->size = 14;
+	this->rect.x = 10;
+	this->rect.y = 10;
 	this->color = {0,0,0};
+	this->font = NULL;
 }
 
 void txt::free()
 {
+//	TTF_CloseFont(this->font);
 	item::free();
 }
 
@@ -919,16 +1113,28 @@ txt::txt(std::string text, std::string fontPath, int x, int y)
 	this->image = TTF_RenderText_Solid(font, text.c_str(), color);
 	this->safeTrackImage = this->image;
 	TTF_CloseFont(this->font);
+	this->font = NULL;
 }
 
 void txt::setText(std::string text)
 {
 	words = text;
+	this->quickRender();
 }
+
 
 void txt::setFontSize(int size)
 {
 	this->size = size;
+}
+
+void txt::addFontSize(int change)
+{
+	this->size += change;
+	if(this->size < 1)
+	{
+		this->size = 1;
+	}
 }
 
 void txt::setFont(string fontPath)
@@ -941,14 +1147,441 @@ void txt::setColor(const SDL_Color textColor)
 	this->color = textColor;
 }
 
-void txt::reset()
+SDL_Color txt::getColor()
 {
-	TTF_CloseFont(this->font);
-	SDL_FreeSurface(this->image);
-	this->image = NULL;
+	return this->color;
+}
+
+string txt::getFont()
+{
+	return this->fontsFilePath;
+}
+
+TTF_Font* txt::getFontPtr()
+{
+	return this->font;
+}
+
+int txt::getFontSize()
+{
+	return this->size;
+}
+
+void txt::fullRender()
+{
+	if(this->font != NULL)
+	{
+		TTF_CloseFont(this->font);
+	}
+	if(this->image != NULL)
+	{
+		SDL_FreeSurface(this->image);
+		this->image = NULL;
+	}
 	this->font = TTF_OpenFont(fontsFilePath.c_str(), size);
-	this->image = TTF_RenderText_Solid(font, words.c_str(), color);
-	TTF_CloseFont(this->font);
+	if(!(words.empty()))
+	{
+		this->image = TTF_RenderText_Solid(font, words.c_str(), color);
+	}
+}
+
+void txt::quickRender()
+{
+	if(this->image != NULL)
+	{
+		SDL_FreeSurface(this->image);
+		this->image = NULL;
+	}
+	if(!(words.empty()))
+	{
+		this->image = TTF_RenderText_Solid(font, words.c_str(), color);
+	}
+}
+
+
+
+void txt::addText(string text)
+{
+	this->words += text;
+}
+
+
+string * txt::getTextPtr()
+{
+	return &(this->words);
+}
+
+string txt::getText()
+{
+	return this->words;
+}
+
+
+
+
+//===================== TEXTBOX Class ==============
+
+
+
+textBox::textBox()
+{
+	string temp = "";
+	boundingBox.x = 10;
+	boundingBox.y = 10;
+	boundingBox.w = 200;
+	boundingBox.h = 200;
+	padding = 0;
+	camera.x = 0;
+	camera.y = 0;
+	camera.w = boundingBox.w;
+	camera.h = boundingBox.h;
+	
+	SDL_Surface * tmpImg = SDL_CreateRGBSurface(0, boundingBox.w, boundingBox.h, 32, 0,0,0,0);
+	this->image = SDL_CreateRGBSurface(0, boundingBox.w, boundingBox.h, 32, 0,0,0,0);
+	this->rect = boundingBox;
+	background.setImage(tmpImg);
+	background.setColor(70,0,0);
+	shouldShowBkg = true;
+	this->cursor = 0;
+	this->rect.x = 10;
+	this->rect.y = 10;
+
+	currentLine = 0;
+	
+	SDL_Color col = {255, 200, 50, 0};
+	lines.push_back(new txt());
+	lines[0]->setFontSize(20);
+	lines[0]->setFont("res/Acme/Acme-Regular.ttf");
+	lines[0]->setColor(col);
+	lines[0]->setPos(padding, padding);
+	lines[0]->fullRender();
+	lines[0]->setText(temp);
+
+	this->cursorImg.setPos(padding, padding);
+	this->cursorImg.setSize(3,lines[0]->getFontSize()); 
+}
+
+void textBox::showBkg(bool yesNo)
+{
+	shouldShowBkg = yesNo;
+}
+
+void textBox::handleEvent(SDL_Event & ev)
+{
+	if(SDL_GetModState() & KMOD_ALT && ev.type == SDL_KEYDOWN)
+	{
+		if(ev.key.keysym.sym == SDLK_UP)
+		{
+			scrollY(10);
+		}
+		else if(ev.key.keysym.sym == SDLK_DOWN)
+		{
+			scrollY(-10);
+		}
+		else if(ev.key.keysym.sym == SDLK_LEFT)
+		{
+			scrollX(10);
+		}
+		else if(ev.key.keysym.sym == SDLK_RIGHT)
+		{
+			scrollX(-10);
+		}
+	}
+	else if(ev.type == SDL_KEYDOWN)
+	{
+		if(ev.key.keysym.sym == SDLK_BACKSPACE)
+		{
+			if(cursor > 0)
+			{
+				string * temp = lines[currentLine]->getTextPtr();
+				string content = *temp;
+				string letterDel = content.substr(cursor - 1, 1);
+				int letterSize;
+				TTF_SizeText(lines[currentLine]->getFontPtr(), letterDel.c_str(), &letterSize, NULL); 
+				content = content.substr(0, cursor - 1);
+				content += temp->substr(cursor, temp->length());
+				lines[currentLine]->setText(content);
+				cursor --;
+				if(cursorImg.getPos().x < boundingBox.w/2 && camera.x < 0)
+				{
+					scrollX(letterSize);
+				}
+			}
+			// concatenate strings, remove line from vector.
+			else if(currentLine > 0)
+			{
+				cursor = lines[currentLine - 1]->getTextPtr()->length();
+				lines[currentLine - 1]->addText(lines[currentLine]->getText());
+				lines.erase(lines.begin() + currentLine);
+				for(int i = currentLine; i < lines.size(); i ++)
+				{
+					lines[i]->move(0, lines[currentLine]->getFontSize() * -1);
+				}
+				currentLine --;
+				TTF_SizeText(lines[currentLine]->getFontPtr(), lines[currentLine]->getText().c_str(), &camera.x, NULL); 
+				if(camera.x > (boundingBox.w * 5)/6)
+				{
+					camera.x *= -1;
+					camera.x += (boundingBox.w*5)/6;
+				}
+				else
+				{
+					camera.x = 0;
+				}
+			}
+		}
+		else if(ev.key.keysym.sym == SDLK_RETURN)
+		{
+			this->newLine();
+			camera.x = 0;
+		}
+		else if(ev.key.keysym.sym == SDLK_LEFT)
+		{
+			if(cursor > 0)
+			{
+				cursor --;
+			}
+			else if(currentLine > 0)
+			{
+				currentLine --;
+				cursor = lines[currentLine]->getTextPtr()->length();
+			}
+		}
+		else if(ev.key.keysym.sym == SDLK_RIGHT)
+		{
+			if(cursor < lines[currentLine]->getTextPtr()->length())
+			{
+				cursor ++;
+			}
+			else if(currentLine + 1 < lines.size())
+			{
+				cursor = 0;
+				currentLine ++;
+				camera.x = 0;
+				if(lines[currentLine]->getPos().y > (camera.h * 5) /6)
+				{
+					scrollY(10);
+				}
+			}
+		}
+		else if(ev.key.keysym.sym == SDLK_UP)
+		{
+			if(currentLine > 0)
+			{
+				currentLine --;
+				int lineLen = (lines[currentLine]->getTextPtr())->length();
+				if(cursor > lineLen)
+				{
+					cursor = lineLen;
+				}
+			}
+		}
+		else if(ev.key.keysym.sym == SDLK_DOWN)
+		{
+			if(currentLine < lines.size() - 1)
+			{
+				currentLine ++;
+				int lineLen = (lines[currentLine]->getTextPtr())->length();
+				if(cursor > lineLen)
+				{
+					cursor = lineLen;
+				}
+			}
+		}
+	}
+	
+	if(ev.type == SDL_TEXTINPUT)
+	{
+		lines[currentLine]->getTextPtr()->insert(cursor, ev.text.text);
+		cursor ++;
+		if(cursorImg.getPos().x > (boundingBox.w * 5)/6)
+		{
+			scrollX(-10);
+		}
+	}
+	
+
+}
+
+void textBox::draw(SDL_Surface * dest)
+{
+	if(shouldShowBkg)
+	{
+		background.draw(this->image);
+	}
+	else
+	{
+		SDL_BlitSurface(dest, &this->rect, this->image, NULL);
+	}
+	// don't draw above the boundary or below. This saves no RAM,
+	// but does cut down CPU use on larger files.
+	int offset = 0;
+	while(offset < lines.size())
+	{
+		SDL_Rect pos = lines[offset]->getPos();
+		if(pos.y + pos.h < 0)
+		{
+			offset ++;
+		}
+		else
+		{
+			break;
+		}
+	}
+	for(int i = offset; i < lines.size(); i ++)
+	{
+		
+		lines[i]->quickRender();
+		if(!(lines[i]->getTextPtr()->empty()))
+		{
+			SDL_Rect temp = lines[i]->getPos();
+			temp.x += camera.x;
+			temp.y += camera.y;
+			SDL_BlitSurface(lines[i]->getImage(), NULL, this->image, &temp);
+		}
+		if(lines[i]->getPos().y + camera.y > boundingBox.h)
+		{
+			break;
+		}
+	}
+// drawing the cursor image.	
+	string sub = lines[currentLine]->getText().substr(0, cursor);
+	int w;
+	TTF_SizeText(lines[0]->getFontPtr(), sub.c_str(), &w, NULL);
+	cursorImg.setPos(padding + w + camera.x, lines[currentLine]->getPos().y + camera.y);
+	cursorImg.draw(this->image);
+
+	SDL_BlitSurface(this->image, NULL, dest, &boundingBox);
+
+}
+
+
+void textBox::newLine()
+{
+		txt* tmp = new txt();
+		string *prevTxt = lines[currentLine]->getTextPtr();
+		string nextTxt;
+		nextTxt = prevTxt->substr(cursor, prevTxt->length());
+		prevTxt->erase(cursor, prevTxt->length());
+
+
+		int fontSizeY = lines[0]->getFontSize();
+		tmp->setFont(lines[0]->getFont());
+		tmp->setColor(lines[0]->getColor());
+		tmp->setFontSize(fontSizeY);
+		tmp->fullRender();
+		for(int i = currentLine + 1; i < lines.size(); i ++)
+		{
+			lines[i]->move(0, fontSizeY);
+		}
+		tmp->setPos(padding, padding + lines[currentLine]->getPos().y + tmp->getFontSize());
+		currentLine ++;
+		lines.insert(lines.begin() + currentLine, tmp);
+		tmp->setText(nextTxt);
+		cursor = 0;
+	
+}
+
+void textBox::scrollX(int pixLeng)
+{
+	if(camera.x + pixLeng <= 0)
+	{
+		camera.x += pixLeng;
+	}
+}
+
+void textBox::scrollY(int pixLeng)
+{
+	if(camera.y + pixLeng <= 0)
+	{
+		camera.y += pixLeng;
+	}
+}
+
+
+void textBox::setBoundary(int x, int y, int w, int h)
+{
+	boundingBox.x = x;
+	boundingBox.y = y;
+	boundingBox.w = w;
+	boundingBox.h = h;
+	this->rect = boundingBox;
+	this->camera.x = 0;
+	this->camera.y = 0;
+	this->camera.w = boundingBox.w;
+	this->camera.h = boundingBox.h;
+	this->background.setSize(w, h);
+
+	SDL_FreeSurface(this->image);
+	this->image = SDL_CreateRGBSurface(0,boundingBox.w, boundingBox.h, 32, 0,0,0,0);
+}
+
+void textBox::setPadding(int between)
+{
+	lines[0]->move(between - padding, 0);
+	padding = between;
+}
+
+void textBox::changeFontSize(int change)
+{
+	for(int i = 0; i < lines.size(); i ++)
+	{
+		lines[i]->addFontSize(1);
+		lines[i]->move(0, i);
+		lines[i]->fullRender();
+	}
+}
+
+void textBox::setBoundary(SDL_Rect bounds)
+{
+	boundingBox.x = bounds.x;
+	boundingBox.y = bounds.y;
+	boundingBox.w = bounds.w;
+	boundingBox.h = bounds.h;
+}
+
+void textBox::setBkgColor(int r, int g, int b)
+{
+	background.setColor(r, g, b);
+}
+
+
+
+//===================== CLASS MARQUIS ==============
+
+marquis::marquis()
+{
+	writing.setText("Hello World");
+	speed = 2;
+	blink = false;
+	clearRunBeforeNext = true;
+}
+
+marquis::addSpeed(int change)
+{
+	speed += change;
+}
+
+void marquis::changeDirection()
+{
+	speed *= -1;
+}
+
+void marquis::setSpeed(int newSpeed)
+{
+	speed = newSpeed;
+}
+
+void draw(SDL_Surface * dest)
+{
+	camera.x += speed;
+	camera.w += speed;
+	if(camera.x > rect.x + rect.w)
+	{
+		camera.x = 0;
+		camera.w = this->rect.w;
+	}
+	SDL_BlitSurface(
 }
 
 
@@ -972,7 +1605,8 @@ void speed::printFPS(SDL_Surface * dest, const string fontPath, int x, int y)
 {
 	stringstream ss;
 	ss.str("");
-	ss << "Speed: " << this->fc / (((double) SDL_GetTicks() - this->redux)/ 1000.0) << "FPS";
+	int time = SDL_GetTicks();
+	ss << "Speed: " << ((double)this->fc) / (((double) time - this->redux)/ 1000.0) << "FPS";
 	txt temp(ss.str(), fontPath, x, y);
 	temp.stamp(dest, x, y);
 	temp.free();

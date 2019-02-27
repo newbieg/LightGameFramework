@@ -48,12 +48,16 @@ int main(int argc, char ** argv)
 
 	board lvl;
 	resMan.add(&lvl);
-	lvl.setDimensions(80, 80);
+	lvl.walk.add(&man);
+	lvl.setDimensions(50, 50);
+//	lvl.setPadding(-1, -4, 90, 90);
 	lvl.setCamera(0, 0, windX, windY);
 	lvl.fillBoard(grass);
 	lvl.driven.add(&man);
 
-	item tank(BLUE, rand() % lvl.getPos().w, rand() % lvl.getPos().h, 30, 20);
+//	item tank(BLUE, rand() % lvl.getPos().w, rand() % lvl.getPos().h, 30, 20);
+	item tank(BLUE, 100, 100, 30, 20);
+	lvl.solids.add(&tank);
 	lvl.driven.add(&tank);
 
 
@@ -68,9 +72,7 @@ int main(int argc, char ** argv)
 	{
 
 		SDL_Event ev;
-		// The poll only gives about 15 events per second.
-		// so that's a limiter on my camera speed... 
-		// Need to monitor SDL_KEYDOWN and set bools
+
 		while(SDL_PollEvent(&ev) != 0)
 		{
 			if(ev.type == SDL_QUIT)
@@ -137,19 +139,17 @@ int main(int argc, char ** argv)
 		{
 			int changeX = xFromPolar(walk, phi);
 			int changeY = yFromPolar(walk, phi);
-			lvl.getCamera()->y += changeY;
-			lvl.getCamera()->x += changeX;
-			lvl.driven.move( -1 * changeX, -1 * changeY);
-			man.move(changeX, changeY);
+			lvl.move(changeX, changeY);
+//			lvl.driven.move( -1 * changeX, -1 * changeY);
+//			man.move(changeX, changeY);
 		}
 		if(down)
 		{
 			int changeX = xFromPolar(walk, phi);
 			int changeY = yFromPolar(walk, phi);
-			lvl.getCamera()->y -= changeY;
-			lvl.getCamera()->x -= changeX;
-			lvl.driven.move(1 * changeX, 1 * changeY);
-			man.move( -1 * changeX, -1 * changeY);
+			lvl.move(-1 * changeX, -1 * changeY);
+//			lvl.driven.move(1 * changeX, 1 * changeY);
+//			man.move( -1 * changeX, -1 * changeY);
 		}
 		if(left)
 		{
@@ -161,12 +161,12 @@ int main(int argc, char ** argv)
 		}
 
 		lvl.draw(screen);
-		man.draw(screen);
+//		man.draw(screen);
+		lvl.driven.draw(screen);
 		SDL_Rect temp = man.getPos();
 		temp.x = temp.x + temp.w/2;
 		temp.y = temp.y + temp.h/2;
 
-		lvl.driven.draw(screen);
 		
 		drawLine(screen,RED, temp.x, temp.y, temp.x + xFromPolar(walk, phi), temp.y + yFromPolar(walk, phi));
 

@@ -1557,7 +1557,7 @@ marquis::marquis()
 	clearRunBeforeNext = true;
 }
 
-marquis::addSpeed(int change)
+void marquis::addSpeed(int change)
 {
 	speed += change;
 }
@@ -1572,7 +1572,7 @@ void marquis::setSpeed(int newSpeed)
 	speed = newSpeed;
 }
 
-void draw(SDL_Surface * dest)
+void marquis::draw(SDL_Surface * dest)
 {
 	camera.x += speed;
 	camera.w += speed;
@@ -1581,7 +1581,7 @@ void draw(SDL_Surface * dest)
 		camera.x = 0;
 		camera.w = this->rect.w;
 	}
-	SDL_BlitSurface(
+//	SDL_BlitSurface(
 }
 
 

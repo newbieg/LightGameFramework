@@ -425,7 +425,8 @@ class textBox : public item
 
 // I might need to wait on this until I come up with 
 // a modified txt which allows for each letter to be a different color...
-class marquis
+// WORK IN PROGRESS
+class marquis : item
 {
 	public:
 		marquis();
@@ -442,7 +443,7 @@ class marquis
 		bool blink;
 		// should the entire text run through to empty before loop?
 		bool clearRunBeforeNext; 
-}
+};
 
 
 

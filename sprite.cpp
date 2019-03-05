@@ -29,6 +29,10 @@ void initFramework()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
+	if(Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		cout << "Could not initiate SDL2 Mixer\n";
+	}	
 	// to build the framework, use the following compile command:
 	// g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lpng yourFile.cpp sprite.cpp 	
 }
@@ -84,6 +88,7 @@ item::item(SDL_Rect size)
 	this->id = item::itemCount;
 	this->safeTrackImage = NULL;
 	this->image = NULL;
+	this->dragging = false;
 
 }
 
@@ -98,6 +103,7 @@ item::item()
 	this->id = item::itemCount;
 	this->safeTrackImage = NULL;
 	this->image = NULL;
+	this->dragging = false;
 }
 
 item::~item()
@@ -192,7 +198,7 @@ unsigned long item::getItemCount()
 
 void item::draw(SDL_Surface* dest)
 {
-	if(image != NULL)
+	if(this->image != NULL)
 	{
 		if(scaled)
 		{
@@ -713,6 +719,20 @@ group group::getClicked(int x, int y)
 item* group::getItem(int index)
 {
 	return items[index];
+}
+
+int group::getIterator(item &lookFor)
+{
+	int iterator = 0;
+	while(!(lookFor == *(getItem(iterator))))
+	{
+		iterator ++;
+	}
+	if(iterator > this->size())
+	{
+		iterator = -1;
+	}
+	return iterator;
 }
 
 vector <item*> group::getItems()
@@ -1759,6 +1779,7 @@ button::button()
 	stateImg.push_back(this->image); // dbl click
 	this->connected = false;
 	this->dblConnected = false;
+	this->hoverConnected = false;
 
 }
 
@@ -1770,8 +1791,16 @@ void button::free()
 
 void button::setImage(int btnEnum, SDL_Surface* theImage)
 {
+	this->needsUpdate = true;
 	stateImg[btnEnum] = theImage;
 }
+
+void button::setImage(int btnEnum, string imagePath)
+{
+	this->needsUpdate = true;
+	stateImg[btnEnum] = IMG_Load(imagePath.c_str());
+}
+
 
 bool button::eventCheck(SDL_Event * e)
 {
@@ -1780,12 +1809,10 @@ bool button::eventCheck(SDL_Event * e)
 		if(e->type == SDL_MOUSEMOTION )
 		{
 			this->BTN_State = BTN_HOVER;
-			/*
 			if(this->hoverConnected == true)
 			{
 				this->hoverActivated();
 			}
-			*/
 		}
 		else if(e->type == SDL_MOUSEBUTTONDOWN)
 		{
@@ -1795,7 +1822,6 @@ bool button::eventCheck(SDL_Event * e)
 		{
 			this->BTN_State = BTN_CLICK;
 		}
-		/*
 		if(this->connected == true && e->button.clicks == 1)
 		{
 			activated();
@@ -1808,7 +1834,6 @@ bool button::eventCheck(SDL_Event * e)
 		{
 			this->image = this->stateImg[BTN_State];
 		}
-		*/
 		if(this->stateImg[BTN_State] != NULL)
 		{
 			this->image = this->stateImg[BTN_State];

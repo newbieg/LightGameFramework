@@ -21,6 +21,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>
+#include "SDL2/SDL_mixer.h"
 #include <string>
 #include <sstream>
 #include <vector>
@@ -306,6 +307,14 @@ class animation : public item
 };
 
 
+class sound: public item
+{
+	public:
+
+	private:
+
+};
+
 // could use some improvement, 
 // This is how I imagine a button might pass a click to a function... 
 class button: public item
@@ -320,6 +329,7 @@ class button: public item
 		virtual void onDblClick(void (*function)());
 
 		virtual void setImage(int BTN_ENUM_FLAG, SDL_Surface *theImage);
+		virtual void setImage(int BTN_ENUM_FLAG, std::string imagePath);
 		virtual void free();
 
 	private:
@@ -541,6 +551,9 @@ class group
 	group getClicked(int x, int y);
 	group getDrags();
 	item* getItem(int index);
+	// returns position in group, otherwise a negative number 
+	// if not present.
+	int getIterator(item &lookFor);
 	std::vector <item*> getItems();
 	virtual void load(std::string fileName);
 	virtual void save(std::string fileName);

@@ -1,5 +1,5 @@
 all: 
-	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lpng risk.cpp sprite.cpp -o risk
+	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng risk.cpp sprite.cpp -o risk
 
 hints:
 	./_ To compile everything by typing make then do this:

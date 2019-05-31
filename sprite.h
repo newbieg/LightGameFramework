@@ -252,28 +252,48 @@ class window : public item
 	public:
 		window();
 		window(std::string title, int width, int height);
+		window(std::string title, int width, int height, unsigned int flags);
+
+		SDL_Surface * getImage();
+		void linkScreen(SDL_Surface ** screen);
+
+		// Update the window's contents with the screen
+		// return the size of the screen
+		SDL_Rect update();
+		// Update the window's contents with the screen
+		void draw(); 
 		void setTitle(std::string title);
 		std::string getTitle();
 		// hides window, simulates window closing.
 		// nice way to store a window for later use.
 		void hide();
 
+		// window is hidden by default
+		void show();
+
 		// actually closes window and destroys it.
 		void close();
+
+		// checks for window-type events and handles actions
+		// relative to them.
+		// Return: true if event pertains to this window.
+		bool handleEvent(SDL_Event &ev);
 
 		//considering implementing as a linked list so that 
 		//all windows could be closed by calling the
 		//following: void closeAll();
 
-		// window is hidden by default
-		void show();
 //		void move(int x, int y);
-		SDL_Rect update();
-//		void update(SDL_Rect section);
-//		void update(SDL_Rect * sections);
+
+
+//		toggleFS() - toggle full screen mode;
+		void toggleFS();
 	private:
+		unsigned int windowFSFlag;
+		unsigned int windowResizeFlag;
 		std::string windowName;
 		SDL_Window* wind;
+		SDL_Surface** linkedScr;
 		bool hidden;
 		bool closeAll;
 };

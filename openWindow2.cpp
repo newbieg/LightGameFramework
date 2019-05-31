@@ -15,17 +15,14 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-	SDL_Init(SDL_INIT_EVERYTHING);
-	TTF_Init();
-	wind = SDL_CreateWindow("Title",SDL_WU, SDL_WU , windX, windY, SDL_WINDOW_OPENGL);
-	if(wind == NULL)
-	{
-		cout << "Could not create Window\n";
-	}
+	initFramework();
+	window wind("Template Window", windX, windY, SDL_WINDOW_RESIZABLE);
 
-	SDL_Surface* screen = SDL_GetWindowSurface(wind);
-	SDL_UpdateWindowSurface(wind);
+	SDL_Surface* screen;
+	wind.linkScreen(&screen);
 
+	item tom(200, 100, 50, 40);
+	
 	bool run = true;
 	speed spd;
 	spd.fps = 30;
@@ -33,8 +30,9 @@ int main(int argc, char ** argv)
 	while(run)
 	{
 		SDL_Event ev;
-		while(SDL_PollEvent(&ev) != 0)
+		if(SDL_PollEvent(&ev) != 0)
 		{
+			wind.handleEvent(ev);
 			if(ev.type == SDL_QUIT)
 			{
 				run = false;
@@ -48,8 +46,24 @@ int main(int argc, char ** argv)
 						{
 							run = false;
 						}
+						break;
+					case SDLK_f:
+						wind.toggleFS();
+
 					case SDLK_SPACE:
+
 					break;
+					case SDLK_RIGHT:
+					{
+						tom.move(1,0);
+					}
+				}
+
+			}
+			else if(ev.type == SDL_KEYUP)
+			{
+				if(ev.key.keysym.sym == SDLK_f)
+				{
 				}
 
 			}
@@ -59,22 +73,22 @@ int main(int argc, char ** argv)
 			}
 
 		}
+
+
 		// Draw to screen here.
 		SDL_FillRect(screen, NULL, 0xffffff);
 
+		tom.draw(screen);
 		spd.printFPS(screen, "res/Acme/Acme-Regular.ttf",  20, 20);
-		SDL_UpdateWindowSurface(wind);
-		spd.limitFPS();
+		wind.draw();
+	//	spd.limitFPS();
 		spd.fc++;
 	}
 
 	SDL_FreeSurface(screen);
 
-	SDL_DestroyWindow(wind);
+	wind.close();
 
-	Mix_Quit();
-	TTF_Quit();
-	IMG_Quit();
 	SDL_Quit();
 	return 0;
 }

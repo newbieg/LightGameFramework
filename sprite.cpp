@@ -776,28 +776,59 @@ window::window()
 {
 	
 	windowName = "No Title";
-	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 200, 150, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+	windowFSFlag = 0;
+	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 200, 150, 0);
 	if(wind == NULL)
 	{
 		cout << "Failed to create Window " << windowName;
 		return;
 	}
-	this->image = SDL_GetWindowSurface(wind);
-	SDL_UpdateWindowSurface(wind);
+	linkedScr = NULL;
 }
 
 window::window(string title, int width, int height)
 {
 	windowName = title;
-	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
+	windowFSFlag = 0;
+	windowResizeFlag = 0;
+	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
 	if(wind == NULL)
 	{
 		cout << "Failed to create Window " << title;
 		return;
 	}
-	this->image = SDL_GetWindowSurface(wind);
-	SDL_UpdateWindowSurface(wind);
+	linkedScr = NULL;
+}
 
+window::window(string title, int width, int height, unsigned int flags)
+{
+	windowName = title;
+	windowFSFlag = 0;
+	windowResizeFlag = flags & SDL_WINDOW_RESIZABLE;
+	wind = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+	SDL_UpdateWindowSurface(wind);
+	this->image = SDL_GetWindowSurface(wind);
+	linkedScr = NULL;
+}
+
+SDL_Surface * window::getImage()
+{
+	this->image = SDL_GetWindowSurface(wind);
+	if(linkedScr != NULL)
+	{
+		*linkedScr = this->image;
+	}
+	return this->image;
+}
+
+void window::linkScreen(SDL_Surface ** screen)
+{
+	this->image = SDL_GetWindowSurface(wind);
+	linkedScr = screen;
+	if(linkedScr != NULL)
+	{
+		*linkedScr = this->image;
+	}
 }
 
 void window::setTitle(string title)
@@ -817,6 +848,13 @@ SDL_Rect window::update()
 	return this->rect;
 }
 
+
+void window::draw()
+{
+	SDL_UpdateWindowSurface(this->wind);
+}
+
+
 void window::hide()
 {
 	SDL_HideWindow(wind);
@@ -829,10 +867,54 @@ void window::show()
 
 void window::close()
 {
-	SDL_FreeSurface(this->image);
 	SDL_DestroyWindow(this->wind);
 }
 
+
+// implementation here made with help of lazyFoo Tutorials
+// as well as Judge Maygarden's answer https://stackoverflow.com/questions/311818/maximize-sdl-window
+bool window::handleEvent(SDL_Event & ev)
+{
+	bool pertainsToThis = false;
+	if(ev.type == SDL_WINDOWEVENT && ev.window.windowID == SDL_GetWindowID(wind))
+	{
+		switch(ev.window.event)
+		{
+			case SDL_WINDOWEVENT_RESIZED:
+				this->image = SDL_GetWindowSurface(wind);
+				if(linkedScr != NULL)
+				{
+					*linkedScr = this->image;
+				}
+				break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+// loast Keyboard focus
+				break;
+			case SDL_WINDOWEVENT_MAXIMIZED:
+				if(windowResizeFlag == SDL_WINDOW_RESIZABLE)
+				{
+					// REsize?
+				}
+				break;
+		}
+		
+		
+	}
+	return pertainsToThis;
+}
+
+void window::toggleFS()
+{
+	if(windowFSFlag)
+	{
+		windowFSFlag = 0;
+	}
+	else
+	{
+		windowFSFlag = SDL_WINDOW_FULLSCREEN;
+	}
+	SDL_SetWindowFullscreen(this->wind, windowFSFlag);
+}
 
 
 
@@ -1160,6 +1242,7 @@ void txt::addFontSize(int change)
 void txt::setFont(string fontPath)
 {
 	this->fontsFilePath = fontPath;
+	this->fullRender();
 }
 
 void txt::setColor(const SDL_Color textColor)

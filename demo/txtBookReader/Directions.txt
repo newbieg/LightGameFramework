@@ -1,0 +1,23 @@
+Welcome! 
+I hope you enjoy this text reader, it's main goal is simplicity
+and reduction of distractions. There are very few controls and they 
+soon become natural to use.
+
+Try out a few, like hitting the f key for Fullscreen Mode.
+Drag and Drop a txt file: saves the current reading position
+and opens the new file for reading
+
+f = Fullscreen
+Left Arrow = back 1 line
+Right Arrow = forward 1 line
+alt Left = Skip back 100 lines (about 3 pages)
+alt Right = Skip forward 100 lines 
+alt up/down = increase/decrease font size for easier reading
+ctrl up/down = rotate through font-styles
+
+And finally, when you're done either exit
+the usual way, or use the combo keys;
+alt w = Quit (close window)
+
+
+

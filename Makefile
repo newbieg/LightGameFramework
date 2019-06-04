@@ -1,5 +1,4 @@
-all: 
-	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/risk.cpp sprite.cpp -o risk
+all: w2 text test pong risk
 
 OSFiles: 
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/OSFileTest.cpp sprite.cpp -o OSTest
@@ -12,7 +11,6 @@ hints:
 
 w2:
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o window2
-	./window2
 
 text:
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/textTest.cpp sprite.cpp -o text
@@ -34,5 +32,5 @@ window:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o windowTemplate2
 
 clean:
-	rm pong movie risk test text windowTemplate windowTemplate2
+	rm pong movie risk test text windowTemplate window2
 

@@ -8,7 +8,7 @@
  * images, so the code is verbose for no reason.
  */
 
-#include <sprite.h>
+#include "../sprite.h"
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <vector>

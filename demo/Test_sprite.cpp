@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "sprite.h"
+#include "../sprite.h"
 
 #include <iostream>
 #include <sstream>

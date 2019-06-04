@@ -1,3 +1,6 @@
+/* A testing area for functions and things that I'm playing with but probably won't add
+ * to the framework itself for various reasons. */
+
 #ifndef SOMECODEFORLINESANDPIXELSINSDL2
 #define SOMECODEFORLINESANDPIXELSINSDL2
 

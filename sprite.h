@@ -99,6 +99,9 @@ SDL_Surface * optLoad(std::string path, const SDL_Surface* dest );
 // initializes the SDL libraries needed for the FrameWork to, well, work
 void initFramework();
 
+// Close the SDL libraries at the end of the program, closeFramework()
+void closeFramework();
+
 // convert a cartesian point down to a single dimensional array
 int xyToSingle(int x, int y);
 

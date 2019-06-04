@@ -1,4 +1,8 @@
-/* Testing multi-OS programming between APPLE, WINDOWS, ANDROID< and LINUX*/
+/* Testing multi-OS programming between APPLE, WINDOWS, ANDROID< and LINUX
+ * These may be usefull if at some point I have to create my own cross-
+ * platform source code. First thing that springs to mind is a directory
+ * lister option so that I could implement a plugin-folder...
+ * */
 
 #include <iostream>
 #include "sprite.h"

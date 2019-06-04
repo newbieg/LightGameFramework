@@ -29,12 +29,21 @@ void initFramework()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
+	IMG_Init(IMG_INIT_PNG);
 	if(Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
 	{
 		cout << "Could not initiate SDL2 Mixer\n";
 	}	
 	// to build the framework, use the following compile command:
-	// g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lpng yourFile.cpp sprite.cpp 	
+	// g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng yourFile.cpp sprite.cpp 	
+}
+
+void closeFramework()
+{
+	TTF_Quit();
+	Mix_Quit();
+	IMG_Quit();
+	SDL_Quit();
 }
 
 void scanLineDraw(SDL_Surface * dest, unsigned int color, int x, int y, int x2)
@@ -1169,14 +1178,20 @@ void animation::next()
 }
 
 void animation::remove(int index) // remove an image at index
-{}
+{
+
+}
+
 void animation::clear() // clear the entire animation
 {
 	images.clear();
 }
 
 bool animation::isEmpty() // check if animation is empty
-{}
+{
+	return this->images.empty();
+}
+
 void animation::setFrameSkip(const int skipFrames)
 {
 	skip = skipFrames;
@@ -2003,10 +2018,12 @@ SDL_Surface * optLoad(string path, const SDL_Surface* dest )
 
 int xyToSingle(int x, int y, int gridWidth)
 {
-	if(x > 0 && y > 0 && gridWidth > 1)
+	if(x >= 0 && y >= 0 && gridWidth > 1)
 	{
 		return y * gridWidth + x;
 	}
+	cout << "xyToSingle could not make a usefull comparison, exit Program.\n";
+	exit(0);
 }
 
 bool writeImage(SDL_Surface * src, char * fileName)

@@ -3,3 +3,14 @@
  - This is a common error I came accross while planning out a header for a class. The problem is that I've created a declaration of a virtual function (like void draw(SDL_Surface dest);) without providing a definition of that virtual function. The gcc-c++ compiler I'm working with will not give you the name of the function in question unless the class has a destructor defined for it. Either take note of which virtual functions are in your header and ensure they are defined, or create a destructor for your class and the compiler will then tell you which function is causing the problem.
 
 
+IDEA;
+1) SDL_UpdateWindowRects()
+	we need a vector of rects, not pointers, these need to be full copies.
+	The rects need to be updated at the start of the game loop, and
+	just before drawing the screen. 
+	After drawing, the vector needs to be cleared again.
+
+	We need to decide if drawing just these rectangles would be better than
+	updating the entire screen... We could possibly determine this before 
+	deciding on loading the vector in the first place... would make more 
+	sense in a pkmon type BS than in a side-scroller for instance.

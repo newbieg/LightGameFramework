@@ -793,6 +793,7 @@ window::window()
 		return;
 	}
 	linkedScr = NULL;
+	opacity = 1.0;
 }
 
 window::window(string title, int width, int height)
@@ -807,6 +808,7 @@ window::window(string title, int width, int height)
 		return;
 	}
 	linkedScr = NULL;
+	opacity = 1.0;
 }
 
 window::window(string title, int width, int height, unsigned int flags)
@@ -910,6 +912,21 @@ bool window::handleEvent(SDL_Event & ev)
 		
 	}
 	return pertainsToThis;
+}
+
+void window::addOpacity(double change)
+{
+	opacity += change;
+	if(opacity > 1.0)
+	{
+		opacity = 1.0;
+	}
+	if(opacity < 0.0)
+	{
+		opacity = 0.0;
+	}
+	SDL_SetWindowOpacity(wind, opacity);
+
 }
 
 void window::toggleFS()

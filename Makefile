@@ -1,4 +1,5 @@
-all: w2 text test pong risk
+all: 
+	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng readEachWord.cpp sprite.cpp -o bookReader
 
 OSFiles: 
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/OSFileTest.cpp sprite.cpp -o OSTest
@@ -23,7 +24,7 @@ pong:
 
 risk:
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/risk.cpp sprite.cpp -o risk
-	cp -Rnv gamePack/res .
+	cp -Rnv demo/res .
 movie:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/Movie.cpp sprite.cpp -o movie
 
@@ -32,5 +33,6 @@ window:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o windowTemplate2
 
 clean:
-	rm pong movie risk test text windowTemplate window2
+	rm pong movie risk test text windowTemplate window2 bookReader
+
 

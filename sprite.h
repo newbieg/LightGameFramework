@@ -290,8 +290,10 @@ class window : public item
 
 
 //		toggleFS() - toggle full screen mode;
+		void addOpacity(double change);
 		void toggleFS();
 	private:
+		double opacity;
 		unsigned int windowFSFlag;
 		unsigned int windowResizeFlag;
 		std::string windowName;

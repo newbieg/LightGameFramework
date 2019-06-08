@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <string.h>
+#include <sstream>
 #include <iostream>
 #include "sprite.h"
 
@@ -51,12 +52,12 @@ int main(int argc, char ** argv)
 	string fileName;
 	for(int i = 1; i < argc; i ++)
 	{
-		if(strcmp(argv[i], "-speed") == 0)	
+		if(strcmp(argv[i], "-speed") == 0 || strcmp(argv[i], "-s") == 0)	
 		{
 			i ++;
 			readSpeed = atoi(argv[i]);
 		}
-		else if(strcmp(argv[i], "-f") == 0)
+		else if(strcmp(argv[i], "-file") == 0 || strcmp(argv[i], "-f") == 0)
 		{
 			i ++;
 			fileName = argv[i];
@@ -79,11 +80,103 @@ int main(int argc, char ** argv)
 		cout << "Couldn't read the provided file, perhaps no read permisions, \nor the file type is not supported.\n";
 		exit(0);
 	}
+	
 	initFramework();
-	window wind;
+	window wind("ASBR - A Simple Book Reader", 800, 600, SDL_WINDOW_RESIZABLE);
 	wind.show();
+	SDL_Surface * screen;
+	screen = wind.getImage();
+	stringstream ss;
+	//txt display("hello world", "res/Noto_Serif/NotoSerif-Regular.ttf", 100, 100);
+	txt display("hello world", "res/Roboto/Roboto-Regular.ttf", 100, 100);
+	display.setFontSize(80);
+	display.fullRender();
+
+	int lineCount = 1;
+	bool run = true;
+	int wait = 400;
+	while(run)
+	{
+		SDL_Event ev;
+		while(SDL_PollEvent(&ev))
+		{
+			switch(ev.type)
+			{
+				case SDL_QUIT:
+					run = false;
+					break;
+				case SDL_DROPFILE:
+
+					break;
+				case SDL_KEYDOWN:
+					switch(ev.key.keysym.sym)
+					{
+						case SDLK_w:
+							if(SDL_GetModState() & KMOD_ALT)
+							{
+								run = false;
+								wind.close();
+								closeFramework();
+								exit(0);
+							}
+							break;
+						case SDLK_LEFT:
+							wait -= wait *.1;
+							if(wait < 30)
+							{
+								wait = 30;
+							}
+							break;
+						case SDLK_RIGHT:
+							wait += wait *.1;
+							if(wait > 1000)
+							{
+								wait = 1000;
+							}
+							break;
+					}
+
+					break;
+
+			}
+		}
+
+		string word;
+		ss >> word;
+		if(word.empty() && lineCount < book.size() - 1)
+		{
+			ss.str("");
+			ss.clear();
+			ss << book[lineCount];
+			ss >> word;
+			lineCount ++;
+			if(lineCount >= book.size() - 1)
+			{
+				run = false;
+			}
+		}
+
+		SDL_FillRect(screen, NULL, 0x0ff);
+		if(!(word.empty()))
+		{
+			cout << word << " ";
+			display.setText(word);
+			display.fullRender();
+
+			if(display.getImage() != NULL)
+			{
+				display.draw(screen);
+			}
+		}
+		wind.draw();
+
+		SDL_Delay(wait);
+
+	}
 
 
+
+	wind.close();
 	closeFramework();
 
 }

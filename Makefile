@@ -1,5 +1,6 @@
 all: 
-	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng readEachWord.cpp sprite.cpp -o bookReader
+	#g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng readEachWord.cpp sprite.cpp -o bookReader
+	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng Uinfo.cpp sprite.cpp -o unic
 
 OSFiles: 
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/OSFileTest.cpp sprite.cpp -o OSTest

@@ -267,6 +267,7 @@ class window : public item
 		void draw(); 
 		void setTitle(std::string title);
 		std::string getTitle();
+		double getOpacity();
 		// hides window, simulates window closing.
 		// nice way to store a window for later use.
 		void hide();

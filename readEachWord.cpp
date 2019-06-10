@@ -48,14 +48,16 @@ int main(int argc, char ** argv)
 {
 
 	cout << argv[0] << " a simple book reader\n";
-	int readSpeed = 60; // words per minute
 	string fileName;
+	int skipper = 10;
+	speed spd;
+	spd.fps = 60;
 	for(int i = 1; i < argc; i ++)
 	{
 		if(strcmp(argv[i], "-speed") == 0 || strcmp(argv[i], "-s") == 0)	
 		{
 			i ++;
-			readSpeed = atoi(argv[i]);
+			spd.fps = atoi(argv[i]);
 		}
 		else if(strcmp(argv[i], "-file") == 0 || strcmp(argv[i], "-f") == 0)
 		{
@@ -84,6 +86,8 @@ int main(int argc, char ** argv)
 	initFramework();
 	window wind("ASBR - A Simple Book Reader", 800, 600, SDL_WINDOW_RESIZABLE);
 	wind.show();
+	cout << wind.getOpacity();
+	SDL_Delay(3000);
 	SDL_Surface * screen;
 	screen = wind.getImage();
 	stringstream ss;
@@ -120,18 +124,29 @@ int main(int argc, char ** argv)
 								exit(0);
 							}
 							break;
+						case SDLK_f:
+							wind.toggleFS();
+							screen = wind.getImage();
+							break;
+						case SDLK_UP:
+							wind.addOpacity(0.05);
+							break;
+						case SDLK_DOWN:
+							wind.addOpacity(-0.05);
+							break;
 						case SDLK_LEFT:
-							wait -= wait *.1;
-							if(wait < 30)
+							skipper ++;
+							if(skipper > spd.fps)
 							{
-								wait = 30;
+								skipper = spd.fps;
 							}
+								
 							break;
 						case SDLK_RIGHT:
-							wait += wait *.1;
-							if(wait > 1000)
+							skipper --;
+							if(skipper < 1)
 							{
-								wait = 1000;
+								skipper = 1;
 							}
 							break;
 					}
@@ -142,35 +157,40 @@ int main(int argc, char ** argv)
 		}
 
 		string word;
-		ss >> word;
-		if(word.empty() && lineCount < book.size() - 1)
+		if(!(spd.fc % skipper))
 		{
-			ss.str("");
-			ss.clear();
-			ss << book[lineCount];
 			ss >> word;
-			lineCount ++;
-			if(lineCount >= book.size() - 1)
+			if(word.empty() && lineCount < book.size() - 1)
 			{
-				run = false;
+				ss.str("");
+				ss.clear();
+				ss << book[lineCount];
+				ss >> word;
+				lineCount ++;
+				if(lineCount >= book.size() - 1)
+				{
+					run = false;
+				}
+			}
+
+
+			SDL_FillRect(screen, NULL, 0x0ff);
+			if(!(word.empty()))
+			{
+				cout << word << " ";
+				display.setText(word);
+				display.fullRender();
+	
+				if(display.getImage() != NULL)
+				{
+					display.draw(screen);
+				}
 			}
 		}
 
-		SDL_FillRect(screen, NULL, 0x0ff);
-		if(!(word.empty()))
-		{
-			cout << word << " ";
-			display.setText(word);
-			display.fullRender();
-
-			if(display.getImage() != NULL)
-			{
-				display.draw(screen);
-			}
-		}
 		wind.draw();
-
-		SDL_Delay(wait);
+		spd.limitFPS();
+		spd.fc++;
 
 	}
 

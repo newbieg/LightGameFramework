@@ -730,6 +730,7 @@ item* group::getItem(int index)
 	return items[index];
 }
 
+
 int group::getIterator(item &lookFor)
 {
 	int iterator = 0;
@@ -820,6 +821,7 @@ window::window(string title, int width, int height, unsigned int flags)
 	SDL_UpdateWindowSurface(wind);
 	this->image = SDL_GetWindowSurface(wind);
 	linkedScr = NULL;
+	//opacity = 1.0;
 }
 
 SDL_Surface * window::getImage()
@@ -851,6 +853,11 @@ void window::setTitle(string title)
 string window::getTitle()
 {
 	return SDL_GetWindowTitle(wind);
+}
+
+double window::getOpacity()
+{
+	return opacity;
 }
 
 SDL_Rect window::update()
@@ -916,16 +923,16 @@ bool window::handleEvent(SDL_Event & ev)
 
 void window::addOpacity(double change)
 {
-	opacity += change;
-	if(opacity > 1.0)
+	this->opacity += change;
+	if(this->opacity > 1)
 	{
-		opacity = 1.0;
+		this->opacity = 1.0;
 	}
-	if(opacity < 0.0)
+	if(this->opacity < 0)
 	{
-		opacity = 0.0;
+		this->opacity = 0.0;
 	}
-	SDL_SetWindowOpacity(wind, opacity);
+	SDL_SetWindowOpacity(this->wind, this->opacity);
 
 }
 

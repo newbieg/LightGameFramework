@@ -1,6 +1,5 @@
 all: 
-	#g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng readEachWord.cpp sprite.cpp -o bookReader
-	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng Uinfo.cpp sprite.cpp -o unic
+	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng readEachWord.cpp sprite.cpp -o bookReader
 
 OSFiles: 
 	g++ -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/OSFileTest.cpp sprite.cpp -o OSTest
@@ -32,6 +31,9 @@ movie:
 window:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow.cpp sprite.cpp -o windowTemplate
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o windowTemplate2
+predefs:
+	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng OSPredefines.cpp sprite.cpp -o predefs
+
 
 clean:
 	rm pong movie risk test text windowTemplate window2 bookReader

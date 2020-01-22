@@ -1923,6 +1923,11 @@ void button::setImage(int btnEnum, string imagePath)
 	stateImg[btnEnum] = IMG_Load(imagePath.c_str());
 }
 
+SDL_Surface* button::getImage(int BTN_ENUM_FLAG)
+{
+	return stateImg[BTN_ENUM_FLAG];
+}
+
 
 bool button::eventCheck(SDL_Event * e)
 {

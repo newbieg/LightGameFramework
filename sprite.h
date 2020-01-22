@@ -356,6 +356,10 @@ class button: public item
 
 		virtual void setImage(int BTN_ENUM_FLAG, SDL_Surface *theImage);
 		virtual void setImage(int BTN_ENUM_FLAG, std::string imagePath);
+
+		SDL_Surface* getImage(int BTN_ENUM_FLAG);
+
+
 		virtual void free();
 
 	private:

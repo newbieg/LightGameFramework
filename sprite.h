@@ -333,12 +333,25 @@ class animation : public item
 };
 
 
+
+// ultimately just an item that emits a noise when activated. 
+// loads the sound into ram for quick acces, so use for small
+// files that are used often and at quick notice. 
+// Use sounds 20 seconds or less, don't play whole songs.
+// 
 class sound: public item
 {
 	public:
+		sound();
+		sound(std::string filePath);
+		bool load(std::string filePath);
+		void play();
+		void stop();
+		bool isPlaying();
 
 	private:
 
+		
 };
 
 // could use some improvement, 

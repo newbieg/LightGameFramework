@@ -1885,6 +1885,46 @@ bool dice::playRoll(int &frames, int speed)
 
 
 
+//======================= Sound Class
+
+
+sound::sound()
+{
+
+}
+
+sound::sound(string filePath)
+{
+	
+}
+
+bool sound::load(string filePath)
+{
+
+	return false;
+}
+
+void sound::play()
+{
+
+}
+
+void sound::stop()
+{
+
+}
+
+bool sound::isPlaying()
+{
+	return false;
+
+}
+
+
+
+
+
+
 //======================== BUTTON CLASS
 
 

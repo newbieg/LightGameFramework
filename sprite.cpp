@@ -29,14 +29,9 @@ void initFramework()
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	IMG_Init(IMG_INIT_PNG);
-	if(Mix_Init(MIX_INIT_MP3) == 0)
-	{
-		cout << "Could Not initialize SDL2 Mixer for mp3 use\n";
-	}
 	// by default open mixer for wav.
 	if(Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) == 0)
 	{
-		cout << "Device is initialized\n";
 		Mix_AllocateChannels(4);
 	}
 	// to build the framework, use the following compile command:
@@ -793,6 +788,9 @@ group group::getDrags()
 
 //======================== WINDOW CLASS =================
 
+
+int window::windowCount = 0;
+
 window::window()
 {
 	
@@ -806,6 +804,7 @@ window::window()
 	}
 	linkedScr = NULL;
 	opacity = 1.0;
+	this->windowCount ++;
 }
 
 window::window(string title, int width, int height)
@@ -821,6 +820,7 @@ window::window(string title, int width, int height)
 	}
 	linkedScr = NULL;
 	opacity = 1.0;
+	this->windowCount ++;
 }
 
 window::window(string title, int width, int height, unsigned int flags)
@@ -833,6 +833,7 @@ window::window(string title, int width, int height, unsigned int flags)
 	this->image = SDL_GetWindowSurface(wind);
 	linkedScr = NULL;
 	//opacity = 1.0;
+	this->windowCount ++;
 }
 
 SDL_Surface * window::getImage()
@@ -843,6 +844,11 @@ SDL_Surface * window::getImage()
 		*linkedScr = this->image;
 	}
 	return this->image;
+}
+
+Uint32 window::getID()
+{
+	return SDL_GetWindowID(this->wind);
 }
 
 void window::linkScreen(SDL_Surface ** screen)
@@ -896,15 +902,30 @@ void window::show()
 
 void window::close()
 {
-	SDL_DestroyWindow(this->wind);
+	// multiple windows mode treated different than
+	// the first window mode in SDL2
+	if(windowCount > 1)
+	{
+		hide();
+		draw();
+		windowCount --;
+		SDL_DestroyWindow(this->wind);
+		wind = NULL;
+	}
+	else if(this->wind != NULL)
+	{
+		SDL_DestroyWindow(this->wind);
+		wind = NULL;
+		windowCount --;
+	}
 }
 
 
 // implementation here made with help of lazyFoo Tutorials
 // as well as Judge Maygarden's answer https://stackoverflow.com/questions/311818/maximize-sdl-window
+// Returns false if window should close.
 bool window::handleEvent(SDL_Event & ev)
 {
-	bool pertainsToThis = false;
 	if(ev.type == SDL_WINDOWEVENT && ev.window.windowID == SDL_GetWindowID(wind))
 	{
 		switch(ev.window.event)
@@ -917,7 +938,7 @@ bool window::handleEvent(SDL_Event & ev)
 				}
 				break;
 			case SDL_WINDOWEVENT_FOCUS_LOST:
-// loast Keyboard focus
+// lost Keyboard focus
 				break;
 			case SDL_WINDOWEVENT_MAXIMIZED:
 				if(windowResizeFlag == SDL_WINDOW_RESIZABLE)
@@ -925,11 +946,18 @@ bool window::handleEvent(SDL_Event & ev)
 					// REsize?
 				}
 				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				if(ev.window.windowID == SDL_GetWindowID(this->wind))
+				{
+					return false;
+				}
+				break;
+
 		}
 		
 		
 	}
-	return pertainsToThis;
+	return true;
 }
 
 void window::addOpacity(double change)

@@ -27,12 +27,8 @@ int main(int argc, char ** argv)
 		SDL_Event ev;
 		if(SDL_PollEvent(&ev) != 0)
 		{
-			wind.handleEvent(ev);
-			if(ev.type == SDL_QUIT)
-			{
-				run = false;
-			}
-			else if(ev.type == SDL_KEYDOWN)
+			run = wind.handleEvent(ev);
+			if(ev.type == SDL_KEYDOWN)
 			{
 				switch(ev.key.keysym.sym)
 				{
@@ -68,11 +64,9 @@ int main(int argc, char ** argv)
 		tom.draw(screen);
 		spd.printFPS(screen, "res/Acme/Acme-Regular.ttf",  20, 20);
 		wind.draw();
-	//	spd.limitFPS();
+		spd.limitFPS();
 		spd.fc++;
 	}
-
-	SDL_FreeSurface(screen);
 
 	wind.close();
 

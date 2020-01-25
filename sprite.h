@@ -258,6 +258,7 @@ class window : public item
 		window(std::string title, int width, int height, unsigned int flags);
 
 		SDL_Surface * getImage();
+		Uint32 getID();
 		void linkScreen(SDL_Surface ** screen);
 
 		// Update the window's contents with the screen
@@ -280,7 +281,7 @@ class window : public item
 
 		// checks for window-type events and handles actions
 		// relative to them.
-		// Return: true if event pertains to this window.
+		// Return: false if window should close
 		bool handleEvent(SDL_Event &ev);
 
 		//considering implementing as a linked list so that 
@@ -302,6 +303,7 @@ class window : public item
 		SDL_Surface** linkedScr;
 		bool hidden;
 		bool closeAll;
+		static int windowCount;
 };
 
 

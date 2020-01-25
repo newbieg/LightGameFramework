@@ -1290,6 +1290,11 @@ txt::txt(std::string text, std::string fontPath, int x, int y)
 	this->rect.y = y;
 	this->fontsFilePath = fontPath;
 	this->font = TTF_OpenFont(fontPath.c_str(), size);
+	if(font == NULL)
+	{
+		cout << "Font not found or not useable: " << fontPath << endl; 
+		return;
+	}
 	this->image = TTF_RenderText_Solid(font, text.c_str(), color);
 	this->safeTrackImage = this->image;
 	TTF_CloseFont(this->font);
@@ -1360,6 +1365,10 @@ void txt::fullRender()
 		this->image = NULL;
 	}
 	this->font = TTF_OpenFont(fontsFilePath.c_str(), size);
+	if(font == NULL)
+	{
+		cout << "Could not open font: " << fontsFilePath << endl;
+	}
 	if(!(words.empty()))
 	{
 		this->image = TTF_RenderText_Solid(font, words.c_str(), color);
@@ -1373,7 +1382,7 @@ void txt::quickRender()
 		SDL_FreeSurface(this->image);
 		this->image = NULL;
 	}
-	if(!(words.empty()))
+	if(!(words.empty() || font == NULL))
 	{
 		this->image = TTF_RenderText_Solid(font, words.c_str(), color);
 	}

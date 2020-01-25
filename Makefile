@@ -29,8 +29,8 @@ movie:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/Movie.cpp sprite.cpp -o movie
 
 window:
-	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow.cpp sprite.cpp -o windowTemplate
-	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o windowTemplate2
+	g++ -O3 -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow.cpp sprite.cpp -o windowTemplate
+	g++ -O3 -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng demo/openWindow2.cpp sprite.cpp -o windowTemplate2
 predefs:
 	g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng OSPredefines.cpp sprite.cpp -o predefs
 

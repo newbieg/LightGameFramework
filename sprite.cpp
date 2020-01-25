@@ -17,7 +17,6 @@ using namespace std;
 
 
 
-//===============   Item =======//
 
 void oshit()
 {
@@ -30,10 +29,16 @@ void initFramework()
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	IMG_Init(IMG_INIT_PNG);
-	if(Mix_OpenAudio(4410, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	if(Mix_Init(MIX_INIT_MP3) == 0)
 	{
-		cout << "Could not initiate SDL2 Mixer\n";
-	}	
+		cout << "Could Not initialize SDL2 Mixer for mp3 use\n";
+	}
+	// by default open mixer for wav.
+	if(Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 512) == 0)
+	{
+		cout << "Device is initialized\n";
+		Mix_AllocateChannels(4);
+	}
 	// to build the framework, use the following compile command:
 	// g++ -g -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lpng yourFile.cpp sprite.cpp 	
 }
@@ -70,6 +75,12 @@ void freeVector(vector<SDL_Surface*> &vec)
 unsigned long item::itemCount = 0;
 int tile::TileWidth = 0;
 int tile::TileHeight = 0;
+
+
+
+//===============   Item =======//
+
+
 
 
 item::item(const item &copy)
@@ -1895,31 +1906,48 @@ sound::sound()
 
 sound::sound(string filePath)
 {
-	
+	/*
+	Nevermind. A sound is only going to be for wav.
+	refer user to music class
+	if(filePath.substr(filePath.length() - 4) == ".mp3")
+	{
+		if(!has_music(MUS_MP3))
+		{
+			// init mp3 to sound
+		}
+	}
+*/
+	load(filePath);	
 }
 
 bool sound::load(string filePath)
 {
+	string wavCheck = filePath.substr(filePath.length()-4);
+	if(wavCheck != ".WAV" && wavCheck != ".wav")
+	{
+		cout << "Sound Class only suports .wav file.\n";
+	}
+	else
+	{
+		this->effect = Mix_LoadWAV(filePath.c_str());
+		if(effect == NULL)
+		{
+			cout << SDL_GetError();
+			cout << "Could Not load file " << filePath << "\n";
+		}
+	}
+	
 
 	return false;
 }
 
 void sound::play()
 {
-
+	if(Mix_PlayChannel(-1, effect, 0) == -1)
+	{
+		cout << "Could Not play Sound Effect\n";
+	}
 }
-
-void sound::stop()
-{
-
-}
-
-bool sound::isPlaying()
-{
-	return false;
-
-}
-
 
 
 

@@ -334,10 +334,13 @@ class animation : public item
 
 
 
-// ultimately just an item that emits a noise when activated. 
+// ultimately just an item that emits a noise when activated.
+// Supports .wav only. ensure the .wav is lowercase. 
 // loads the sound into ram for quick acces, so use for small
 // files that are used often and at quick notice. 
 // Use sounds 20 seconds or less, don't play whole songs.
+// Ultimately I hope to provide for a target and a source 
+// so that it can sound like the item is in a specific spot.
 // 
 class sound: public item
 {
@@ -346,10 +349,9 @@ class sound: public item
 		sound(std::string filePath);
 		bool load(std::string filePath);
 		void play();
-		void stop();
-		bool isPlaying();
 
 	private:
+		Mix_Chunk *effect;
 
 		
 };

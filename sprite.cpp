@@ -926,7 +926,14 @@ void window::close()
 // Returns false if window should close.
 bool window::handleEvent(SDL_Event & ev)
 {
-	if(ev.type == SDL_WINDOWEVENT && ev.window.windowID == SDL_GetWindowID(wind))
+	if(ev.type == SDL_KEYDOWN)
+	{
+		if(ev.key.keysym.sym == SDLK_w && (SDL_GetModState() & KMOD_CTRL))
+		{
+			return false;
+		}
+	}
+	else if(ev.type == SDL_WINDOWEVENT && ev.window.windowID == SDL_GetWindowID(wind))
 	{
 		switch(ev.window.event)
 		{
@@ -1259,6 +1266,168 @@ void animation::setFrameSkip(const int skipFrames)
 {
 	skip = skipFrames;
 }
+
+
+
+
+// ================= Slider Class
+
+slider::slider()
+{
+	clickable.add(&bLeft);
+	clickable.add(&bRight);
+	clickable.add(&bMiddle);
+	drawable.add(&rig);
+	drawable.add(&bLeft);
+	drawable.add(&bRight);
+	drawable.add(&bMiddle);
+
+	this->rect = {32, 32, 100, 30};
+
+	min = 0, max = 100, middle = 50;
+	setupDefault();
+	
+}
+
+slider::slider(int minimum, int maximum)
+{
+	clickable.add(&bLeft);
+	clickable.add(&bRight);
+	clickable.add(&bMiddle);
+	drawable.add(&rig);
+	drawable.add(&bLeft);
+	drawable.add(&bRight);
+	drawable.add(&bMiddle);
+
+	min = minimum;
+	max = maximum;
+	middle = (min + max)/2;
+
+
+	setupDefault();
+}
+
+int slider::handleEvent(SDL_Event * ev)
+{
+	return 0;
+}
+
+button * slider::getLeftButton()
+{
+	return &bLeft;
+}
+
+button * slider::getRightButton()
+{
+	return &bRight;
+}
+
+button * slider::getMiddleButton()
+{
+	return &bMiddle;
+}
+
+double slider::getMin()
+{
+	return min;
+}
+
+double slider::getMax()
+{
+	return max;
+}
+
+double slider::getMid()
+{
+	return middle;
+}
+double slider::getValue()
+{
+	return value;
+}
+
+void slider::setLeftButton(button * btn)
+{
+	
+}
+
+void slider::setRightButton(button * btn)
+{
+
+}
+
+void slider::setMiddleButton(button * btn)
+{
+
+}
+
+
+void slider::setMin()
+{
+
+}
+
+void slider::setMax()
+{
+
+}
+void slider::setValue(double val)
+{
+	value = val;
+}
+
+void slider::setupDefault()
+{
+	item bkgHover, bkgClick, bkgUp;
+	bkgHover.setSize(30, 30);
+	bkgClick.setSize(30, 30);
+	bkgUp.setSize(30, 30);
+	bkgHover.setColor(150, 255, 150);
+	bkgClick.setColor(100, 240, 100);
+	bkgUp.setColor(125, 255, 124);	
+
+	bLeft.setImage(BTN_HOVER, bkgHover.getImage());
+	bLeft.setImage(BTN_CLICK, bkgClick.getImage());
+	bLeft.setImage(BTN_DOWN, bkgClick.getImage());
+	bLeft.setImage(BTN_UP, bkgUp.getImage());
+	bRight.setImage(BTN_HOVER, bkgHover.getImage());
+	bRight.setImage(BTN_CLICK, bkgClick.getImage());
+	bRight.setImage(BTN_DOWN, bkgClick.getImage());
+	bRight.setImage(BTN_UP, bkgUp.getImage());
+	
+	bkgUp.setSize(10, 30);
+	bkgHover.setSize(10, 30);
+	bkgClick.setSize(10, 30);
+
+	bMiddle.setImage(BTN_HOVER, bkgHover.getImage());
+	bMiddle.setImage(BTN_CLICK, bkgClick.getImage());
+	bMiddle.setImage(BTN_DOWN, bkgClick.getImage());
+	bMiddle.setImage(BTN_UP, bkgUp.getImage());
+
+	
+	
+
+
+
+	bMiddle.setPos((this->rect.x + this->rect.w)/2, this->rect.y);
+
+	bLeft.setPos(this->rect.x, this->rect.y);
+	int tempx, tempy;
+	bLeft.getSize(tempx, tempy);
+	rig.setSize(this->rect.w - (tempx * 2) , 12);
+	rig.setColor(200, 200, 200);
+	rig.setPos(this->rect.x + tempx, this->rect.y + this->rect.h/2);
+	rig.getSize(tempx, tempy);
+	bRight.setPos(this->rect.x + this->rect.w, this->rect.y);
+
+
+}
+
+void slider::draw(SDL_Surface * dest)
+{
+	drawable.draw(dest);
+}
+
 
 
 

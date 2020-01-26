@@ -31,7 +31,6 @@
 #include <cmath>
 
 const int TILESIZE = 32;
-
 enum WindowTransforms
 {
 	WT_BLOCKS, // replace old with squares containing new
@@ -391,7 +390,6 @@ class button: public item
 };
 
 
-
 class txt: public item
 {
 	public:
@@ -615,6 +613,41 @@ class group
 	std::vector <item*> items;
 	std::vector <SDL_Rect> updateRects; 
 
+
+
+};
+
+
+class slider: public item
+{
+	public:
+		
+	slider();
+	slider(int minimum, int maximum);
+	int handleEvent(SDL_Event * ev);
+	button * getLeftButton();
+	button * getRightButton();
+	button * getMiddleButton();
+	double getMin();
+	double getMax();
+	double getMid();
+	double getValue();
+	void setLeftButton(button * btn);
+	void setRightButton(button * btn);
+	void setMiddleButton(button * btn);
+	void setValue(double val);
+	void setMin();
+	void setMax();
+	void setupDefault();
+	void draw(SDL_Surface * dest);
+	
+	private:
+	button bLeft, bMiddle, bRight;
+	item rig;
+	double value;
+	double min, max, middle;
+	group drawable;
+	group clickable;
 
 
 };

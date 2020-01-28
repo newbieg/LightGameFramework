@@ -180,23 +180,38 @@ item::item(int x, int y, int w, int h)
 
 unsigned int item::setColor(int r, int g, int b)
 {
-	this->color = SDL_MapRGB(this->image->format, r, g, b);
-	SDL_FillRect(this->image, NULL, this->color);
-	return color;
+	if(this->image != NULL)
+	{
+		this->color = SDL_MapRGB(this->image->format, r, g, b);
+		SDL_FillRect(this->image, NULL, this->color);
+		return color;
+	}
+	cout << "Error: Trying to set color on an image that doesn't exist\n";
+	return 0;
 }
 
 unsigned int item::setColor(int r, int g, int b, int a)
 {
-	this->color = SDL_MapRGBA(this->image->format, r, g, b, a);
-	SDL_FillRect(this->image, NULL, this->color);
-	return color;
+	if(this->image != NULL)
+	{
+		this->color = SDL_MapRGBA(this->image->format, r, g, b, a);
+		SDL_FillRect(this->image, NULL, this->color);
+		return color;
+	}
+	cout << "Error: Trying to set color on an image that doesn't exist\n";
+	return 0;
 }
 
 unsigned int item::setColor(unsigned int mapColor)
 {
-	SDL_FillRect(this->image, NULL, mapColor);
-	this->color = mapColor;
-	return mapColor;
+	if(this->image != NULL)
+	{
+		SDL_FillRect(this->image, NULL, mapColor);
+		this->color = mapColor;
+		return mapColor;
+	}
+	cout << "Trying to set mapped color to a null image\n";
+	return 0;
 }
 
 
@@ -393,10 +408,13 @@ void item::setSize(int w, int h)
 	this->rect.w = w;
 	this->rect.h = h;
 	this->needsUpdate = true;
+	/* I have to leave this to the user for now, 
+	 * previous image may be in use by another item!
 	if(this->image != NULL)
 	{
 		SDL_FreeSurface(this->image);
 	}
+	*/
 	this->image = SDL_CreateRGBSurface(0, w, h, 32, 0,0,0,0);
 	setColor(this->color);
 }
@@ -1284,7 +1302,10 @@ slider::slider()
 
 	this->rect = {32, 32, 100, 30};
 
-	min = 0, max = 100, middle = 50;
+	minSlide = 0;
+       	maxSlide = 100;
+	min = 0;
+	max = 100;
 	setupDefault();
 	
 }
@@ -1301,15 +1322,51 @@ slider::slider(int minimum, int maximum)
 
 	min = minimum;
 	max = maximum;
-	middle = (min + max)/2;
-
 
 	setupDefault();
 }
 
 int slider::handleEvent(SDL_Event * ev)
 {
-	return 0;
+	if(ev->type == SDL_MOUSEMOTION && bMiddle.getDrag())
+	{
+		int tempx = ev->motion.x;
+		int tempWid, t;
+		rig.getSize(tempWid, t);
+		int minSlide = bRight.getPos().x - tempWid + 1;
+		int maxSlide = minSlide + tempWid - bMiddle.getPos().w - 1;
+		if(tempx < minSlide)
+		{
+			tempx = minSlide;
+		}
+		else if(tempx > maxSlide)
+		{
+			tempx = maxSlide;
+		}
+		bMiddle.setPos(tempx, this->rect.y);
+		return true;
+	}
+	else if(ev->type == SDL_MOUSEBUTTONUP)
+	{
+		bMiddle.setDrag(false);
+	}
+	if(bMiddle.eventCheck(ev))
+	{
+		// slider is getting event
+		if(bMiddle.getState() == BTN_DOWN)
+		{
+			bMiddle.setDrag(true);
+		}
+	}
+	else if(bRight.eventCheck(ev))
+	{
+		// increase slider value
+	}
+	else if(bLeft.eventCheck(ev))
+	{
+		// decrease Slider val
+	}
+	return false;
 }
 
 button * slider::getLeftButton()
@@ -1339,11 +1396,15 @@ double slider::getMax()
 
 double slider::getMid()
 {
-	return middle;
+	return (min + max)/2;
 }
 double slider::getValue()
 {
-	return value;
+	double pMin = rig.getPos().x + 1;
+	double pMax = rig.getPos().w - bMiddle.getPos().w - 1;
+	double pVal = bMiddle.getPos().x - pMin;
+	double percent = pVal/pMax;
+	return (max-min) * percent + min;
 }
 
 void slider::setLeftButton(button * btn)
@@ -1362,34 +1423,45 @@ void slider::setMiddleButton(button * btn)
 }
 
 
-void slider::setMin()
+void slider::setMin(double val)
 {
-
+	this->min = val;
 }
 
-void slider::setMax()
+void slider::setMax(double val)
 {
-
+	this->max = val;
 }
 void slider::setValue(double val)
 {
+	double percent = (val - min)/(max - min);
+	bMiddle.setPos((int)(rig.getPos().x + rig.getPos().w * percent), this->rect.y);
 	value = val;
+}
+
+void slider::setSize(int w, int h)
+{
+	this->rect.w = w;
+	this->rect.h = h;
+	setupDefault();
 }
 
 void slider::setupDefault()
 {
 	item bkgHover, bkgClick, bkgUp;
-	bkgHover.setSize(30, 30);
-	bkgClick.setSize(30, 30);
-	bkgUp.setSize(30, 30);
-	bkgHover.setColor(150, 255, 150);
-	bkgClick.setColor(100, 240, 100);
-	bkgUp.setColor(125, 255, 124);	
+	bkgHover.setColor(200, 255, 200);
+	bkgHover.setSize(5, 30);
+	bkgClick.setSize(5, 30);
+	bkgUp.setSize(5, 30);
+	bkgHover.setColor(200, 255, 200);
+	bkgClick.setColor(50, 240, 500);
+	bkgUp.setColor(105, 255, 104);	
 
 	bLeft.setImage(BTN_HOVER, bkgHover.getImage());
 	bLeft.setImage(BTN_CLICK, bkgClick.getImage());
 	bLeft.setImage(BTN_DOWN, bkgClick.getImage());
 	bLeft.setImage(BTN_UP, bkgUp.getImage());
+
 	bRight.setImage(BTN_HOVER, bkgHover.getImage());
 	bRight.setImage(BTN_CLICK, bkgClick.getImage());
 	bRight.setImage(BTN_DOWN, bkgClick.getImage());
@@ -1404,23 +1476,31 @@ void slider::setupDefault()
 	bMiddle.setImage(BTN_DOWN, bkgClick.getImage());
 	bMiddle.setImage(BTN_UP, bkgUp.getImage());
 
-	
-	
+	setPos(0,0);
+}
 
-
-
-	bMiddle.setPos((this->rect.x + this->rect.w)/2, this->rect.y);
-
-	bLeft.setPos(this->rect.x, this->rect.y);
+void slider::setPos(int x, int y)
+{
 	int tempx, tempy;
+	this->rect.x = x;
+	this->rect.y = y;
+	bMiddle.setPos((this->rect.x + this->rect.w)/2, this->rect.y);
+	bLeft.setPos(this->rect.x, this->rect.y);
 	bLeft.getSize(tempx, tempy);
-	rig.setSize(this->rect.w - (tempx * 2) , 12);
-	rig.setColor(200, 200, 200);
+	rig.setSize(this->rect.w - tempx*2 , 12);
 	rig.setPos(this->rect.x + tempx, this->rect.y + this->rect.h/2);
-	rig.getSize(tempx, tempy);
-	bRight.setPos(this->rect.x + this->rect.w, this->rect.y);
+	rig.setColor(200, 200, 200);
+	bRight.setPos(this->rect.x + this->rect.w - tempx, this->rect.y);
 
+}
 
+void slider::free()
+{
+	bMiddle.free();
+	bRight.free();
+	bLeft.free();
+	rig.free();
+	item::free();
 }
 
 void slider::draw(SDL_Surface * dest)
@@ -2173,6 +2253,7 @@ button::button()
 	stateImg.push_back(this->image); // down
 	stateImg.push_back(this->image); // click
 	stateImg.push_back(this->image); // dbl click
+	this->BTN_State = BTN_UP;
 	this->connected = false;
 	this->dblConnected = false;
 	this->hoverConnected = false;
@@ -2235,10 +2316,6 @@ bool button::eventCheck(SDL_Event * e)
 		{
 			this->image = this->stateImg[BTN_State];
 		}
-		if(this->stateImg[BTN_State] != NULL)
-		{
-			this->image = this->stateImg[BTN_State];
-		}
 		return true;
 
 	}
@@ -2250,7 +2327,21 @@ bool button::eventCheck(SDL_Event * e)
 	return false;
 }
 
-int button::getState()
+void button::getSize(int &w, int & h)
+{
+	if(stateImg[BTN_State] != NULL)
+	{
+		w = stateImg[BTN_State]->clip_rect.w;
+		h = stateImg[BTN_State]->clip_rect.h;
+	}
+	else
+	{
+		w = 10;
+		h = 10;
+	}
+}
+
+ButtonStates button::getState()
 {
 	return this->BTN_State;
 }

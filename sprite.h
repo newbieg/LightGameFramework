@@ -52,7 +52,8 @@ enum ButtonStates
 	BTN_HOVER,
 	BTN_DOWN,
 	BTN_CLICK, 
-	BTN_DBCLICK
+	BTN_DBCLICK,
+	BTN_DEAD // no interaction currently available
 };
 
 enum ChrStates
@@ -365,7 +366,7 @@ class button: public item
 		button();
 //	virtual ~button();
 		bool eventCheck(SDL_Event * e); // return true if event is interacting with button
-		virtual int getState(); // return a BUTTON_STATE enumerative
+		virtual ButtonStates getState(); // return a BUTTON_STATE enumerative
 		virtual void onHover(void (*function)());
 		virtual void onClick(void (*function)());
 		virtual void onDblClick(void (*function)());
@@ -374,12 +375,13 @@ class button: public item
 		virtual void setImage(int BTN_ENUM_FLAG, std::string imagePath);
 
 		SDL_Surface* getImage(int BTN_ENUM_FLAG);
+		void getSize(int & w, int & h);
 
 
 		virtual void free();
 
 	private:
-		int BTN_State;
+		ButtonStates BTN_State;
 		std::vector <SDL_Surface*> stateImg;
 		void (*activated)();
 		void (*dblActivated)();
@@ -636,18 +638,22 @@ class slider: public item
 	void setRightButton(button * btn);
 	void setMiddleButton(button * btn);
 	void setValue(double val);
-	void setMin();
-	void setMax();
+	void setMin(double val);
+	void setMax(double val);
+	void setPos(int x, int y);
+	void setSize(int w, int y);
 	void setupDefault();
 	void draw(SDL_Surface * dest);
+
+	void free();
 	
 	private:
 	button bLeft, bMiddle, bRight;
 	item rig;
-	double value;
-	double min, max, middle;
+	int minSlide, maxSlide;
 	group drawable;
 	group clickable;
+	double min, max, value;
 
 
 };

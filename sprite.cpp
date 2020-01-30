@@ -1449,7 +1449,7 @@ void slider::setSize(int w, int h)
 void slider::setupDefault()
 {
 	item bkgHover, bkgClick, bkgUp;
-	bkgHover.setColor(200, 255, 200);
+//	bkgHover.setColor(200, 255, 200);
 	bkgHover.setSize(5, 30);
 	bkgClick.setSize(5, 30);
 	bkgUp.setSize(5, 30);

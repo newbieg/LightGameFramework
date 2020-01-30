@@ -745,4 +745,42 @@ class board : public item
 	SDL_Rect padding;
 };
 
+// Define a layout that shares a vertical space between it's group of items,
+// given a parent item's drawing box.
+class vBox: public item
+{
+	public:
+	vBox();
+	vBox(item *root);
+	add(item* leaf, int gravity);
+	add(item* leaf);
+	void draw();
+
+
+	private:
+	item* root;
+	group leaves;
+	int space;
+	
+
+};
+
+
+class hBox: public group
+{
+	public:
+	hBox();
+	hBox(item *root);
+	void add(item* leaf, int gravity);
+	void add(item* leaf);
+	void add(item * leaf);
+	void draw();
+
+	private:
+	item* root;
+	group leaves;
+	int space;
+
+}
+
 #endif

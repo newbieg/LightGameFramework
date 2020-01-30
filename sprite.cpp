@@ -90,6 +90,7 @@ item::item(const item &copy)
 	this->dragging = copy.dragging;
 	this->id = copy.id;
 	this->safeTrackImage = copy.image;
+	this->isShown = true;
 
 }
 
@@ -105,6 +106,7 @@ item::item(SDL_Rect size)
 	this->safeTrackImage = NULL;
 	this->image = NULL;
 	this->dragging = false;
+	this->isShown = true;
 
 }
 
@@ -120,6 +122,7 @@ item::item()
 	this->safeTrackImage = NULL;
 	this->image = NULL;
 	this->dragging = false;
+	this->isShown = true;
 }
 
 item::~item()
@@ -162,6 +165,7 @@ item::item(unsigned int color, int x, int y, int w, int h)
 	this->scaled = false;
 	itemCount ++;
 	this->id = item::itemCount;
+	this->isShown = true;
 }
 
 item::item(int x, int y, int w, int h)
@@ -177,6 +181,17 @@ item::item(int x, int y, int w, int h)
 	this->scaled = false;
 	itemCount ++;
 	this->id = item::itemCount;
+	this->isShown = true;
+}
+
+void item::show()
+{
+	isShown = true;
+}
+
+void item::hide()
+{
+	isShown = false;
 }
 
 unsigned int item::setColor(int r, int g, int b)
@@ -229,20 +244,23 @@ unsigned long item::getItemCount()
 
 void item::draw(SDL_Surface* dest)
 {
-	if(this->image != NULL)
+	if(this->isShown)
 	{
-		if(scaled)
+		if(this->image != NULL)
 		{
-			SDL_BlitScaled(image, NULL, dest, &rect);
+			if(scaled)
+			{
+				SDL_BlitScaled(image, NULL, dest, &rect);
+			}
+			else
+			{
+				SDL_BlitSurface(image, NULL, dest, &rect);
+			}
 		}
 		else
 		{
-			SDL_BlitSurface(image, NULL, dest, &rect);
+			cout << "item id =  " << this->getID() << "Had an empty image.\n";
 		}
-	}
-	else
-	{
-		cout << "item id =  " << this->getID() << "Had an empty image.\n";
 	}
 }
 
@@ -1433,7 +1451,7 @@ void slider::setMax(double val)
 void slider::setValue(double val)
 {
 	double percent = (val - min)/(max - min);
-	bMiddle.setPos((int)(rig.getPos().x + rig.getPos().w * percent), this->rect.y);
+	bMiddle.setPos((int)((rig.getPos().x + rig.getPos().w * percent) - bMiddle.getPos().w/2), this->rect.y);
 	value = val;
 }
 
@@ -1493,7 +1511,6 @@ void slider::setPos(int x, int y)
 
 	minSlide = bRight.getPos().x - rig.getPos().w + 1;
 	maxSlide = minSlide + rig.getPos().w - (bMiddle.getPos().w * 5/2) - 5;
-	cout << bMiddle.getPos().w << " ";
 }
 
 void slider::free()
@@ -1524,6 +1541,7 @@ txt::txt()
 	this->rect.y = 10;
 	this->color = {0,0,0};
 	this->font = NULL;
+	isShown = false;
 }
 
 void txt::free()
@@ -1547,6 +1565,10 @@ txt::txt(std::string text, std::string fontPath, int x, int y)
 		return;
 	}
 	this->image = TTF_RenderText_Solid(font, text.c_str(), color);
+	if(this->image == NULL)
+	{
+		isShown = false;
+	}
 	this->safeTrackImage = this->image;
 	TTF_CloseFont(this->font);
 	this->font = NULL;
@@ -1623,6 +1645,12 @@ void txt::fullRender()
 	if(!(words.empty()))
 	{
 		this->image = TTF_RenderText_Solid(font, words.c_str(), color);
+		show();
+	}
+	else
+	{
+		this->image = SDL_CreateRGBSurface(0, 10, 10, 32, 0,0,0,0);
+		hide();
 	}
 }
 

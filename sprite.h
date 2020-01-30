@@ -156,6 +156,8 @@ class item
 	virtual ~item();
 	item(unsigned int color, int x, int y, int w = 100, int h = 100);
 	item(int x, int y, int w = 100, int h = 100); 
+	void show();
+	void hide();
 
 	// should return a rect that requires screen update
 	virtual SDL_Rect update();
@@ -247,6 +249,7 @@ class item
 
 	static unsigned long itemCount;
 	unsigned long id;
+	bool isShown;
 };
 
 
@@ -753,7 +756,10 @@ class textInput: public txt
 	textInput()
 		: txt{}{curretPos = 0;};
 	textInput(std::string text, std::string fontPath, int x, int y)
-		: txt {text, fontPath, x, y} {curretPos = 0;};
+		: txt {text, fontPath, x, y}
+	{
+		curretPos = text.length();
+	}
 	
 	void setTextLimit(int num);
 	bool handleEvent(SDL_Event * ev);

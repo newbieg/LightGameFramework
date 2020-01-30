@@ -368,7 +368,7 @@ class button: public item
 	public:
 		button();
 //	virtual ~button();
-		bool eventCheck(SDL_Event * e); // return true if event is interacting with button
+		bool eventCheck(SDL_Event & e); // return true if event is interacting with button
 		virtual ButtonStates getState(); // return a BUTTON_STATE enumerative
 		virtual void onHover(void (*function)());
 		virtual void onClick(void (*function)());
@@ -630,7 +630,7 @@ class slider: public item
 		
 	slider();
 	slider(int minimum, int maximum);
-	int handleEvent(SDL_Event * ev);
+	int handleEvent(SDL_Event & ev);
 	button * getLeftButton();
 	button * getRightButton();
 	button * getMiddleButton();
@@ -762,7 +762,7 @@ class textInput: public txt
 	}
 	
 	void setTextLimit(int num);
-	bool handleEvent(SDL_Event * ev);
+	bool handleEvent(SDL_Event & ev);
 	// set the curret to a specific point in text
 	void setCurret(int val);
 	// move the curret by val chars

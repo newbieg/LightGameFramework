@@ -1345,11 +1345,11 @@ slider::slider(int minimum, int maximum)
 	setupDefault();
 }
 
-int slider::handleEvent(SDL_Event * ev)
+int slider::handleEvent(SDL_Event & ev)
 {
-	if(ev->type == SDL_MOUSEMOTION && bMiddle.getDrag())
+	if(ev.type == SDL_MOUSEMOTION && bMiddle.getDrag())
 	{
-		int tempx = ev->motion.x;
+		int tempx = ev.motion.x;
 		tempx -= bMiddle.getPos().w/2;
 		if(tempx < minSlide)
 		{
@@ -1362,7 +1362,7 @@ int slider::handleEvent(SDL_Event * ev)
 		bMiddle.setPos(tempx, this->rect.y);
 		return true;
 	}
-	else if(ev->type == SDL_MOUSEBUTTONUP)
+	else if(ev.type == SDL_MOUSEBUTTONUP)
 	{
 		bMiddle.setDrag(false);
 	}
@@ -2333,11 +2333,11 @@ SDL_Surface* button::getImage(int BTN_ENUM_FLAG)
 }
 
 
-bool button::eventCheck(SDL_Event * e)
+bool button::eventCheck(SDL_Event & e)
 {
-	if(this->isInside(e->button.x, e->button.y) || this->isInside(e->motion.x, e->motion.y))
+	if(this->isInside(e.button.x, e.button.y) || this->isInside(e.motion.x, e.motion.y))
 	{
-		if(e->type == SDL_MOUSEMOTION )
+		if(e.type == SDL_MOUSEMOTION )
 		{
 			this->BTN_State = BTN_HOVER;
 			if(this->hoverConnected == true)
@@ -2345,19 +2345,19 @@ bool button::eventCheck(SDL_Event * e)
 				this->hoverActivated();
 			}
 		}
-		else if(e->type == SDL_MOUSEBUTTONDOWN)
+		else if(e.type == SDL_MOUSEBUTTONDOWN)
 		{
 			this->BTN_State = BTN_DOWN;
 		}
-		else if(e->type == SDL_MOUSEBUTTONUP)
+		else if(e.type == SDL_MOUSEBUTTONUP)
 		{
 			this->BTN_State = BTN_CLICK;
 		}
-		if(this->connected == true && e->button.clicks == 1)
+		if(this->connected == true && e.button.clicks == 1)
 		{
 			activated();
 		}
-		if(this->dblConnected == true && e->button.clicks >= 2)
+		if(this->dblConnected == true && e.button.clicks >= 2)
 		{
 			dblActivated();
 		}
@@ -2650,16 +2650,16 @@ void textInput::setTextLimit(int val)
 	limitSize = val;
 }
 
-bool textInput::handleEvent(SDL_Event * ev)
+bool textInput::handleEvent(SDL_Event & ev)
 {
 	if(focus)
 	{
-		switch(ev->type)
+		switch(ev.type)
 		{
 			case SDL_TEXTINPUT:{
 				string temp = words;
 				words = words.substr(0, curretPos);
-				words += ev->text.text;
+				words += ev.text.text;
 				words += temp.substr(curretPos);
 				curretPos ++;
 				fullRender();
@@ -2667,7 +2667,7 @@ bool textInput::handleEvent(SDL_Event * ev)
 			break;
 				
 			case SDL_KEYDOWN:{
-				if(ev->key.keysym.sym == SDLK_BACKSPACE)
+				if(ev.key.keysym.sym == SDLK_BACKSPACE)
 				{
 					if(curretPos > 0)
 					{

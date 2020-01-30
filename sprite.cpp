@@ -64,6 +64,7 @@ void freeVector(vector<SDL_Surface*> &vec)
 			vec[i] = NULL;
 		}
 	}
+	vec.clear();
 }
 
 
@@ -1331,10 +1332,7 @@ int slider::handleEvent(SDL_Event * ev)
 	if(ev->type == SDL_MOUSEMOTION && bMiddle.getDrag())
 	{
 		int tempx = ev->motion.x;
-		int tempWid, t;
-		rig.getSize(tempWid, t);
-		int minSlide = bRight.getPos().x - tempWid + 1;
-		int maxSlide = minSlide + tempWid - bMiddle.getPos().w - 1;
+		tempx -= bMiddle.getPos().w/2;
 		if(tempx < minSlide)
 		{
 			tempx = minSlide;
@@ -1443,13 +1441,14 @@ void slider::setSize(int w, int h)
 {
 	this->rect.w = w;
 	this->rect.h = h;
-	setupDefault();
+//	setupDefault();
+	minSlide = bRight.getPos().x - rig.getPos().w + 1;
+	maxSlide = minSlide + rig.getPos().w - (bMiddle.getPos().w*5/2) - 5;
 }
 
 void slider::setupDefault()
 {
 	item bkgHover, bkgClick, bkgUp;
-//	bkgHover.setColor(200, 255, 200);
 	bkgHover.setSize(5, 30);
 	bkgClick.setSize(5, 30);
 	bkgUp.setSize(5, 30);
@@ -1489,18 +1488,21 @@ void slider::setPos(int x, int y)
 	bLeft.getSize(tempx, tempy);
 	rig.setSize(this->rect.w - tempx*2 , 12);
 	rig.setPos(this->rect.x + tempx, this->rect.y + this->rect.h/2);
-	rig.setColor(200, 200, 200);
+//	rig.setColor(200, 200, 200);
 	bRight.setPos(this->rect.x + this->rect.w - tempx, this->rect.y);
 
+	minSlide = bRight.getPos().x - rig.getPos().w + 1;
+	maxSlide = minSlide + rig.getPos().w - (bMiddle.getPos().w * 5/2) - 5;
+	cout << bMiddle.getPos().w << " ";
 }
 
 void slider::free()
 {
-	bMiddle.free();
-	bRight.free();
-	bLeft.free();
-	rig.free();
 	item::free();
+	rig.free();
+	bMiddle.free();
+//	bRight.free();
+//	bLeft.free();
 }
 
 void slider::draw(SDL_Surface * dest)
@@ -2257,25 +2259,44 @@ button::button()
 	this->connected = false;
 	this->dblConnected = false;
 	this->hoverConnected = false;
-
+	for(int i = BTN_DEAD; i > 0; i --)
+	{
+		needsFree[i] = false;
+	}
 }
 
 void button::free()
 {
-	freeVector(stateImg);
+	//freeVector(stateImg);
+	for(int i = BTN_DEAD; i > 0; i --)
+	{
+		if(needsFree[i])
+		{
+			SDL_FreeSurface(stateImg[i]);
+			stateImg[i] = NULL;
+		}
+	}
+	stateImg.clear();
+
 	item::free();
 }
 
 void button::setImage(int btnEnum, SDL_Surface* theImage)
 {
+	needsFree[btnEnum] = false;
 	this->needsUpdate = true;
 	stateImg[btnEnum] = theImage;
+	this->rect.w = this->stateImg[btnEnum]->clip_rect.w;
+	this->rect.h = this->stateImg[btnEnum]->clip_rect.h;
 }
 
 void button::setImage(int btnEnum, string imagePath)
 {
 	this->needsUpdate = true;
 	stateImg[btnEnum] = IMG_Load(imagePath.c_str());
+	needsFree[btnEnum] = true;
+	this->rect.w = this->stateImg[btnEnum]->clip_rect.w;
+	this->rect.h = this->stateImg[btnEnum]->clip_rect.h;
 }
 
 SDL_Surface* button::getImage(int BTN_ENUM_FLAG)
@@ -2592,5 +2613,136 @@ void drawBox(SDL_Surface * dest, SDL_Rect rect, int r, int g, int b)
 }
 
 
+//========================= textInput Class
+
+
+
+void textInput::setTextLimit(int val)
+{
+	limitSize = val;
+}
+
+bool textInput::handleEvent(SDL_Event * ev)
+{
+	if(focus)
+	{
+		switch(ev->type)
+		{
+			case SDL_TEXTINPUT:{
+				string temp = words;
+				words = words.substr(0, curretPos);
+				words += ev->text.text;
+				words += temp.substr(curretPos);
+				curretPos ++;
+				fullRender();
+			}
+			break;
+				
+			case SDL_KEYDOWN:{
+				if(ev->key.keysym.sym == SDLK_BACKSPACE)
+				{
+					if(curretPos > 0)
+					{
+						string temp1 = words;
+						words = words.substr(0, curretPos - 1);
+						words += temp1.substr(curretPos);
+						curretPos --;
+						fullRender();
+					}
+				}
+			}
+			break;
+		}
+		
+	}
+	return false;
+}
+
+void textInput::setCurret(int val)
+{
+	curretPos = val;
+}
+
+void textInput::moveCurret(int val)
+{
+	curretPos += val;
+}
+
+int textInput::getCurret()
+{
+	return curretPos;
+}
+
+void textInput::setFocus(bool yn)
+{
+	focus = yn;
+}
+
+bool textInput::getFocus()
+{
+	return focus;
+}
+
+int textInput::getTextLimit()
+{
+	return limitSize;
+}
+
+
+
+//========================= hBox Class
+
+hBox::hBox()
+{
+
+}
+
+hBox::hBox(item *root)
+{
+
+}
+
+void hBox::add(item* leaf, int gravity)
+{
+
+}
+
+void hBox::add(item* leaf)
+{
+
+}
+
+void hBox::draw()
+{
+
+}
+
+
+//========================= vBox Class
+
+vBox::vBox()
+{
+
+}
+
+vBox::vBox(item* root)
+{
+
+}
+
+void vBox::add(item* leaf, int gravity)
+{
+
+}
+
+void vBox::add(item *leaf)
+{
+
+}
+
+void vBox::draw()
+{
+
+}
 
 

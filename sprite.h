@@ -389,6 +389,7 @@ class button: public item
 		bool connected;
 		bool dblConnected;
 		bool hoverConnected;
+		bool needsFree[BTN_DEAD];
 };
 
 
@@ -426,7 +427,7 @@ class txt: public item
 		std::string getText();
 
 		// void slowDraw(SDL_Surface* dest , int fpl); // instead of instantly printing, type each letter on a frame per second scale (fpl == frames per letter) ... have decided that this should wait until animation class is set up...
-	private:
+	protected:
 		std::string words;
 		int size;
 		SDL_Color color;
@@ -745,6 +746,45 @@ class board : public item
 	SDL_Rect padding;
 };
 
+
+class textInput: public txt
+{
+	public:
+	textInput()
+		: txt{}{curretPos = 0;};
+	textInput(std::string text, std::string fontPath, int x, int y)
+		: txt {text, fontPath, x, y} {curretPos = 0;};
+	
+	void setTextLimit(int num);
+	bool handleEvent(SDL_Event * ev);
+	// set the curret to a specific point in text
+	void setCurret(int val);
+	// move the curret by val chars
+	void moveCurret(int val);
+	int getCurret();
+	void setFocus(bool trueFalse);
+	bool getFocus();
+	int getTextLimit();
+	
+
+
+/* Todo:
+ * option to set a background img or leave clear
+ * if in a group and next is called, link focus to the
+ * next textInput 
+ */
+
+	private:
+	bool hasBkg;
+	bool focus;
+	int curretPos;
+	int limitSize;
+
+
+};
+
+
+
 // Define a layout that shares a vertical space between it's group of items,
 // given a parent item's drawing box.
 class vBox: public item
@@ -752,8 +792,8 @@ class vBox: public item
 	public:
 	vBox();
 	vBox(item *root);
-	add(item* leaf, int gravity);
-	add(item* leaf);
+	void add(item* leaf, int gravity);
+	void add(item* leaf);
 	void draw();
 
 
@@ -772,7 +812,6 @@ class hBox: public group
 	hBox();
 	hBox(item *root);
 	void add(item* leaf, int gravity);
-	void add(item* leaf);
 	void add(item * leaf);
 	void draw();
 
@@ -781,6 +820,6 @@ class hBox: public group
 	group leaves;
 	int space;
 
-}
+};
 
 #endif

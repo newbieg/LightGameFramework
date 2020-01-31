@@ -5,5 +5,5 @@ using namespace std;
 
 int main()
 {
-	cout << SDL_GetPrefPath("Softfoot_Software", "SDL_Pompoko");
+	cout << SDL_GetPrefPath("Softfoot_Software", "SDL_Pomodoro");
 }

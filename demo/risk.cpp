@@ -440,7 +440,7 @@ int main()
 				}
 
 			}
-			gimp.eventCheck(&ev);
+			gimp.eventCheck(ev);
 		}
 		SDL_SetCursor(cursors[team % 5]);
 		bkg.draw(screen);

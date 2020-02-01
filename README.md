@@ -1,9 +1,17 @@
 # LightGameFramework
 An RPG framework ontop SDL2, generally a hobby project, Creative Commons license.
 
-# TO DO:
-text input - with option for int or float only inputs
-txt - was originally made as a build-render-draw all in one. Then I tried to optimize out for more permanent text to remove the render from a draw cycle (give user option of when to render text). big mistake, better to make a new item called txtFull or something. Naming is not my strong suit...
+## TO DO:
+text input - with option for int or float only inputs. 
+
+Better buttons [perhaps figure out callbacks? Or a simple option of accepting a group as a button is likely to need access to an item in said group, or even affect multiple items in said group... seems a way to pass multiple args?]
+vertical/horizontal scroll-bar
+Layouts [to make buttons/items align based on a parent item]
+Hardware acceleration [let's get beyond SDL_Surface as our base drawing unit]
+Split-screen for VR?
+Haptics/joystick?
+Wifi multiplayer?
+
 
 
 ## Here's some things I've created with the framework so far
@@ -13,3 +21,5 @@ txt - was originally made as a build-render-draw all in one. Then I tried to opt
 ![](./demo/riskDemo.png)
 ### Pong with option of 1 or 2 players
 ![](./demo/pong2PlayerDemo.png)
+
+

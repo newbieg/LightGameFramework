@@ -23,3 +23,6 @@ Wifi multiplayer?
 ![](./demo/pong2PlayerDemo.png)
 
 
+## Some more demos
+I use these demos as my proof of concept area, so it's probably a good idea to add more variety to them.
+Obviously the next demo should be a paint program. 

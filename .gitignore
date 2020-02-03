@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# builds
+*risk
+*pong
+*bookReader
+*ButtonBuilder

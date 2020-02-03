@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 	while(run)
 	{
 		SDL_Event ev;
-		if(SDL_PollEvent(&ev) != 0)
+		while(SDL_PollEvent(&ev) != 0)
 		{
 			run = wind.handleEvent(ev);
 			if(ev.type == SDL_KEYDOWN)

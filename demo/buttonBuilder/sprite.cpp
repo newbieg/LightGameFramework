@@ -996,10 +996,12 @@ bool window::handleEvent(SDL_Event & ev)
 					return false;
 				}
 				break;
-
 		}
 		
-		
+	}
+	else if(ev.type == SDL_QUIT)
+	{
+		return false;
 	}
 	return true;
 }

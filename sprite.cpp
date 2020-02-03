@@ -161,7 +161,7 @@ item::item(unsigned int color, int x, int y, int w, int h)
 	this->rect.y = y;
 	this->rect.w = w;
 	this->rect.h = h;
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	this->scaled = false;
 	itemCount ++;
 	this->id = item::itemCount;
@@ -177,7 +177,7 @@ item::item(int x, int y, int w, int h)
 	this->rect.y = y;
 	this->rect.w = w;
 	this->rect.h = h;
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	this->scaled = false;
 	itemCount ++;
 	this->id = item::itemCount;
@@ -196,25 +196,13 @@ void item::hide()
 
 unsigned int item::setColor(int r, int g, int b)
 {
-	if(this->image != NULL)
-	{
-		this->color = SDL_MapRGB(this->image->format, r, g, b);
-		SDL_FillRect(this->image, NULL, this->color);
-		return color;
-	}
-	cout << "Error: Trying to set color on an image that doesn't exist\n";
+	setColor(SDL_MapRGB(this->image->format, r, g, b));
 	return 0;
 }
 
 unsigned int item::setColor(int r, int g, int b, int a)
 {
-	if(this->image != NULL)
-	{
-		this->color = SDL_MapRGBA(this->image->format, r, g, b, a);
-		SDL_FillRect(this->image, NULL, this->color);
-		return color;
-	}
-	cout << "Error: Trying to set color on an image that doesn't exist\n";
+	this->setColor(SDL_MapRGBA(this->image->format, r, g, b, a));
 	return 0;
 }
 
@@ -226,7 +214,7 @@ unsigned int item::setColor(unsigned int mapColor)
 		this->color = mapColor;
 		return mapColor;
 	}
-	cout << "Trying to set mapped color to a null image\n";
+	this->color = mapColor;
 	return 0;
 }
 
@@ -305,7 +293,7 @@ SDL_Surface * item::getImage() const
 
 void item::setImage(SDL_Surface * freshImage)
 {
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	this->image = freshImage;
 	this->rect.w = image->clip_rect.w;
 	this->rect.h = image->clip_rect.h;
@@ -313,7 +301,7 @@ void item::setImage(SDL_Surface * freshImage)
 
 void item::setImage(string path)
 {
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	this->image = IMG_Load(path.c_str());
 	this->rect.w = image->clip_rect.w;
 	this->rect.h = image->clip_rect.h;
@@ -395,7 +383,7 @@ void item::setPos(int x, int y)
 {
 	rect.x = x;
 	rect.y = y;
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 }
 
 void item::getPos(int & x, int & y)
@@ -424,9 +412,25 @@ void item::getSize(int & w, int & h)
 
 void item::setSize(int w, int h)
 {
-	this->rect.w = w;
-	this->rect.h = h;
-	this->needsUpdate = true;
+	if(w > 0)
+	{
+		this->rect.w = w;
+	}
+	else
+	{
+		this->rect.w += -w;
+		this->rect.x += w;
+	}
+	if(h > 0)
+	{
+		this->rect.h = h;
+	}
+	else
+	{
+		this->rect.h += -h;
+		this->rect.y += h;
+	}
+	//this->needsUpdate = true;
 	/* I have to leave this to the user for now, 
 	 * previous image may be in use by another item!
 	if(this->image != NULL)
@@ -434,7 +438,8 @@ void item::setSize(int w, int h)
 		SDL_FreeSurface(this->image);
 	}
 	*/
-	this->image = SDL_CreateRGBSurface(0, w, h, 32, 0,0,0,0);
+	this->free();
+	this->image = SDL_CreateRGBSurface(0, this->rect.w, this->rect.h, 32, 0,0,0,0);
 	setColor(this->color);
 }
 
@@ -497,7 +502,7 @@ void item::move(int x, int y)
 {
 	this->rect.x += x;
 	this->rect.y += y;
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 }
 
 
@@ -996,10 +1001,12 @@ bool window::handleEvent(SDL_Event & ev)
 					return false;
 				}
 				break;
-
 		}
 		
-		
+	}
+	else if(ev.type == SDL_QUIT)
+	{
+		return false;
 	}
 	return true;
 }
@@ -2312,7 +2319,7 @@ void button::free()
 void button::setImage(int btnEnum, SDL_Surface* theImage)
 {
 	needsFree[btnEnum] = false;
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	stateImg[btnEnum] = theImage;
 	this->rect.w = this->stateImg[btnEnum]->clip_rect.w;
 	this->rect.h = this->stateImg[btnEnum]->clip_rect.h;
@@ -2320,7 +2327,7 @@ void button::setImage(int btnEnum, SDL_Surface* theImage)
 
 void button::setImage(int btnEnum, string imagePath)
 {
-	this->needsUpdate = true;
+	//this->needsUpdate = true;
 	stateImg[btnEnum] = IMG_Load(imagePath.c_str());
 	needsFree[btnEnum] = true;
 	this->rect.w = this->stateImg[btnEnum]->clip_rect.w;
